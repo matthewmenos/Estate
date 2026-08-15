@@ -1,132 +1,85 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Ghana numbers: normalize local format (0XXXXXXXXX) to E.164 (+233XXXXXXXXX)
-  function normalizePhone(input: string) {
-    const digits = input.replace(/\D/g, "");
-    if (digits.startsWith("233")) return `+${digits}`;
-    if (digits.startsWith("0")) return `+233${digits.slice(1)}`;
-    return `+${digits}`;
-  }
-
-  async function sendCode(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error } = await supabaseBrowser.auth.signInWithOtp({
-      phone: normalizePhone(phone),
-    });
-
-    setLoading(false);
+    const { data, error } = await supabaseBrowser.auth.signInWithPassword({ email, password });
     if (error) {
-      setError(error.message);
-      return;
-    }
-    setStep("otp");
-  }
-
-  async function verifyCode(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const { data, error } = await supabaseBrowser.auth.verifyOtp({
-      phone: normalizePhone(phone),
-      token: otp,
-      type: "sms",
-    });
-
-    setLoading(false);
-    if (error) {
+      setLoading(false);
       setError(error.message);
       return;
     }
 
-    // Ensure a profile row exists for this user (first login only).
-    const userId = data.user?.id;
-    if (userId) {
-      await supabaseBrowser
-        .from("profiles")
-        .upsert({ id: userId, phone: normalizePhone(phone) }, { onConflict: "id" });
-    }
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("phone_verified")
+      .eq("id", data.user.id)
+      .single();
 
-    router.push("/dashboard");
+    setLoading(false);
+    router.push(profile?.phone_verified ? "/dashboard" : "/verify-phone");
   }
 
   return (
     <main className="mx-auto max-w-sm px-4 py-16">
       <h1 className="text-xl font-bold text-ink mb-1">Owner login</h1>
-      <p className="text-slate text-sm mb-6">
-        List and manage your properties on Accra Rentals.
-      </p>
+      <p className="text-slate text-sm mb-6">List and manage your properties on Accra Rentals.</p>
 
-      {step === "phone" ? (
-        <form onSubmit={sendCode} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Phone number</label>
-            <input
-              type="tel"
-              required
-              placeholder="024 123 4567"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
-          >
-            {loading ? "Sending code…" : "Send code"}
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={verifyCode} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Enter the code sent to {phone}
-            </label>
-            <input
-              type="text"
-              required
-              inputMode="numeric"
-              placeholder="123456"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm tracking-widest"
-            />
-          </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
-          >
-            {loading ? "Verifying…" : "Verify & log in"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setStep("phone")}
-            className="w-full text-sm text-slate"
-          >
-            Use a different number
-          </button>
-        </form>
-      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-ink mb-1">Email</label>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-ink mb-1">Password</label>
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+          />
+        </div>
+        {error && <p className="text-sm text-rust">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
+        >
+          {loading ? "Logging in…" : "Log in"}
+        </button>
+        <p className="text-sm text-center">
+          <Link href="/forgot-password" className="text-slate hover:text-rust hover:underline">
+            Forgot password?
+          </Link>
+        </p>
+        <p className="text-sm text-slate text-center">
+          No account?{" "}
+          <Link href="/signup" className="text-rust font-medium hover:underline">
+            Sign up
+          </Link>
+        </p>
+      </form>
     </main>
   );
 }

@@ -90,3 +90,39 @@ Run `supabase/migrations/0003_tenants_and_payments.sql` in the Supabase SQL edit
 
 - No automatic recurring due-date generation yet — you add each month's due payment by hand on the tenant page. Worth automating (e.g. a scheduled function that creates next month's payment a few days before `rent_due_day`) once this is validated.
 - No SMS/WhatsApp reminder when a payment is overdue.
+
+## Round 4 — email/password login + Arkesel phone verification
+
+Owner auth no longer uses Supabase's built-in phone-OTP login (which only supports Twilio/MessageBird/Vonage/Textlocal). Instead:
+
+- **Signup** (`app/signup/page.tsx`) — email + password via Supabase Auth, plus name and phone. Creates the account, then immediately sends a phone verification code.
+- **Phone verification** (`app/verify-phone/page.tsx`) — enter the 6-digit code. Verification itself happens through **Arkesel's OTP API** (`lib/arkesel.ts`), not Supabase — Arkesel generates, sends, and verifies the code; we just call their `/send` and `/verify` endpoints and mark `profiles.phone_verified = true` on success.
+- **Login** (`app/login/page.tsx`) — plain email + password. Redirects to phone verification if not yet completed.
+
+### Setting up Arkesel
+
+1. Create an account at [arkesel.com](https://arkesel.com) and grab your **Main API key** from the dashboard (the OTP endpoints specifically reject scoped/sub keys — a common first-integration gotcha).
+2. Register a sender ID (the `sender_id` field in `lib/arkesel.ts`, currently `"AccraRent"` — update it to whatever you register, and note sender ID approval can take a little time).
+3. Add `ARKESEL_API_KEY` to `.env.local`.
+4. **Confirm the exact API contract before relying on it.** I built `lib/arkesel.ts` from Arkesel's publicly documented OTP endpoints, but their docs explicitly say to confirm the current request/response shape before shipping — in particular, double check the `verify` endpoint's success field (`verifyPhoneOtp` in `lib/arkesel.ts` checks a couple of likely field names defensively, but hasn't been tested against a real response).
+
+### Important Supabase setting to check
+
+If your Supabase project has **"Confirm email" enabled** (Authentication → Providers → Email), a new user's session won't be active immediately after `signUp()` — they'd need to click an email link first. The current signup flow assumes email confirmation is **off**, so the profile upsert and OTP send can happen right away. If you want email confirmation on, the profile creation + phone verification step needs to move to after their first login instead — flag this if you want that adjustment.
+
+### Run the new migration
+
+Run `supabase/migrations/0004_email_auth_and_phone_verification.sql` after `0001`–`0003`.
+
+## Round 5 — forgot password via phone
+
+Since login is email/password but phone is the verified identifier, password reset goes through phone, not email:
+
+- **Forgot password** (`app/forgot-password/page.tsx`) — enter your phone number.
+- **Reset password** (`app/reset-password/page.tsx`) — enter the Arkesel code sent to that phone, plus a new password.
+- Verification reuses the same Arkesel OTP endpoints as signup. On a verified code, the password is updated server-side via `supabase.auth.admin.updateUserById` (`app/api/password-reset/confirm/route.ts`) — an admin-only call that only ever runs with the service role key, never exposed to the browser.
+
+**Security notes worth knowing:**
+- `/api/password-reset/request` always returns the same generic response whether or not the phone number is registered, so the endpoint can't be used to check who has an account.
+- Only phone numbers with `phone_verified = true` can trigger a reset — an unverified/unclaimed number can't be used to hijack an account.
+- There's no rate limiting on reset attempts yet. Fine for early testing, but worth adding (e.g. via Supabase's rate limit settings, or a simple attempts counter) before this is exposed to real users, so someone can't hammer the endpoint guessing codes.
