@@ -44,41 +44,41 @@ export default function InquiriesPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-brand-dark">Inquiries</h1>
-        <Link href="/dashboard" className="text-sm text-gray-500">
+        <h1 className="text-xl font-bold text-ink">Inquiries</h1>
+        <Link href="/dashboard" className="text-sm text-slate">
           ← Back to listings
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-gray-500 text-sm">Loading…</p>
+        <p className="text-slate text-sm">Loading…</p>
       ) : inquiries.length === 0 ? (
-        <p className="text-gray-500 text-sm">
+        <p className="text-slate text-sm">
           No inquiries yet. They'll show up here as soon as someone contacts you about a listing.
         </p>
       ) : (
-        <div className="divide-y divide-gray-200 bg-white rounded-lg border border-gray-200">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10">
           {inquiries.map((inq) => (
             <div key={inq.id} className="px-4 py-3">
               <div className="flex items-center justify-between">
                 <p className="font-medium">{inq.renter_name}</p>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-slate/70">
                   {new Date(inq.created_at).toLocaleDateString()}
                 </p>
               </div>
               <Link
                 href={`/properties/${inq.property_id}`}
-                className="text-sm text-brand hover:underline"
+                className="text-sm text-rust hover:underline"
               >
                 {inq.properties?.title ?? "Listing"}
               </Link>
-              <p className="text-sm text-gray-600 mt-1">
-                <a href={`tel:${inq.renter_phone}`} className="text-brand-dark font-medium">
+              <p className="text-sm text-slate mt-1">
+                <a href={`tel:${inq.renter_phone}`} className="text-ink font-medium">
                   {inq.renter_phone}
                 </a>
               </p>
               {inq.message && (
-                <p className="text-sm text-gray-700 mt-1 italic">"{inq.message}"</p>
+                <p className="text-sm text-ink/80 mt-1 italic">"{inq.message}"</p>
               )}
             </div>
           ))}

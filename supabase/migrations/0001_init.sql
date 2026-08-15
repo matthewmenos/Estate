@@ -45,20 +45,7 @@ create table public.inquiries (
   renter_phone text not null,
   message text,
   created_at timestamptz not null default now()
-  );
-
--- Auto-update updated_at on properties when a row is modified.
-create function public.update_updated_at_column()
-returns trigger as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$ language plpgsql;
-
-create trigger properties_updated_at
-before update on public.properties
-for each row execute function public.update_updated_at_column();
+);
 
 -- Row Level Security
 alter table public.profiles enable row level security;

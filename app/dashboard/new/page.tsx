@@ -127,7 +127,7 @@ export default function NewListingPage() {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-8">
-      <h1 className="text-xl font-bold text-brand-dark mb-6">List a property</h1>
+      <h1 className="text-xl font-bold text-ink mb-6">List a property</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
@@ -137,7 +137,7 @@ export default function NewListingPage() {
             value={form.title}
             onChange={(e) => updateField("title", e.target.value)}
             placeholder="3-bedroom house in East Legon"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
           />
         </div>
 
@@ -147,7 +147,7 @@ export default function NewListingPage() {
             value={form.description}
             onChange={(e) => updateField("description", e.target.value)}
             rows={4}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
           />
         </div>
 
@@ -158,7 +158,7 @@ export default function NewListingPage() {
             value={form.address}
             onChange={(e) => updateField("address", e.target.value)}
             placeholder="Street / area"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+            className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
           />
         </div>
 
@@ -168,7 +168,7 @@ export default function NewListingPage() {
             <select
               value={form.property_type}
               onChange={(e) => updateField("property_type", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
             >
               <option value="house">House</option>
               <option value="apartment">Apartment</option>
@@ -181,7 +181,7 @@ export default function NewListingPage() {
             <select
               value={form.listing_type}
               onChange={(e) => updateField("listing_type", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
             >
               <option value="rent">For rent</option>
               <option value="sale">For sale</option>
@@ -198,7 +198,7 @@ export default function NewListingPage() {
               min="0"
               value={form.price}
               onChange={(e) => updateField("price", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
           <div>
@@ -208,7 +208,7 @@ export default function NewListingPage() {
               min="0"
               value={form.size_sqm}
               onChange={(e) => updateField("size_sqm", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
         </div>
@@ -221,7 +221,7 @@ export default function NewListingPage() {
               min="0"
               value={form.bedrooms}
               onChange={(e) => updateField("bedrooms", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
           <div>
@@ -231,7 +231,7 @@ export default function NewListingPage() {
               min="0"
               value={form.bathrooms}
               onChange={(e) => updateField("bathrooms", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function NewListingPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-brand text-white py-2 text-sm font-medium disabled:opacity-50"
+          className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
         >
           {submitting ? "Publishing…" : "Publish listing"}
         </button>

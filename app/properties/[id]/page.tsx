@@ -2,12 +2,13 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { supabaseServer } from "@/lib/supabase";
 import InquiryForm from "@/components/InquiryForm";
+import VerifiedSeal from "@/components/VerifiedSeal";
 
 async function getProperty(id: string) {
   const supabase = supabaseServer();
   const { data, error } = await supabase
     .from("properties")
-    .select("*, property_media(url, sort_order)")
+    .select("*, property_media(url, sort_order), profiles(verification_status)")
     .eq("id", id)
     .single();
 
@@ -22,52 +23,67 @@ export default async function PropertyPage({ params }: { params: { id: string } 
   const photos = (property.property_media ?? []).sort(
     (a: any, b: any) => a.sort_order - b.sort_order
   );
+  const verified = (property as any).profiles?.verification_status === "verified";
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      {photos.length > 0 ? (
-        <div className="grid grid-cols-2 gap-2 mb-6 rounded-lg overflow-hidden">
-          <div className="relative h-72 col-span-2 sm:col-span-1">
-            <Image src={photos[0].url} alt={property.title} fill className="object-cover" />
+    <main className="mx-auto max-w-3xl px-4 py-10">
+      <div className="relative">
+        {photos.length > 0 ? (
+          <div className="grid grid-cols-2 gap-2 mb-8 rounded-sm overflow-hidden">
+            <div className="relative h-72 col-span-2 sm:col-span-1">
+              <Image src={photos[0].url} alt={property.title} fill className="object-cover" />
+            </div>
+            <div className="hidden sm:grid grid-rows-2 gap-2 h-72">
+              {photos.slice(1, 3).map((p: any, i: number) => (
+                <div key={i} className="relative h-full">
+                  <Image src={p.url} alt={property.title} fill className="object-cover" />
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="hidden sm:grid grid-rows-2 gap-2 h-72">
-            {photos.slice(1, 3).map((p: any, i: number) => (
-              <div key={i} className="relative h-full">
-                <Image src={p.url} alt={property.title} fill className="object-cover" />
-              </div>
-            ))}
+        ) : (
+          <div className="h-72 bg-ink/5 rounded-sm mb-8" />
+        )}
+        {verified && (
+          <div className="absolute top-3 right-3 drop-shadow">
+            <VerifiedSeal size={72} />
           </div>
-        </div>
-      ) : (
-        <div className="h-72 bg-gray-200 rounded-lg mb-6" />
-      )}
+        )}
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
         <div className="sm:col-span-2">
-          <h1 className="text-2xl font-bold">{property.title}</h1>
-          <p className="text-gray-500 mb-4">{property.address}, {property.city}</p>
+          <span className="font-mono text-xs tracking-widest uppercase text-rust">
+            {property.listing_type === "rent" ? "For rent" : "For sale"}
+          </span>
+          <h1 className="font-display text-3xl font-semibold text-ink mt-1">
+            {property.title}
+          </h1>
+          <p className="text-slate mb-5">{property.address}, {property.city}</p>
 
-          <p className="text-xl font-bold text-brand mb-4">
+          <p className="font-mono text-2xl font-semibold text-rust mb-6">
             {property.currency} {Number(property.price).toLocaleString()}
             {property.listing_type === "rent" && (
-              <span className="text-sm font-normal text-gray-500"> /month</span>
+              <span className="text-sm font-normal text-slate"> /month</span>
             )}
           </p>
 
-          <div className="flex gap-4 text-sm text-gray-600 mb-6">
+          <div className="flex gap-5 text-sm text-slate mb-8 pb-8 border-b border-ink/10">
             {property.bedrooms != null && <span>{property.bedrooms} bed</span>}
             {property.bathrooms != null && <span>{property.bathrooms} bath</span>}
             {property.size_sqm != null && <span>{property.size_sqm} sqm</span>}
           </div>
 
           {property.description && (
-            <p className="text-gray-700 whitespace-pre-line">{property.description}</p>
+            <p className="text-ink/80 whitespace-pre-line leading-relaxed">
+              {property.description}
+            </p>
           )}
         </div>
 
         <div className="sm:col-span-1">
-          <div className="bg-white border border-gray-200 rounded-lg p-4 sticky top-4">
-            <h2 className="font-semibold mb-3">Interested?</h2>
+          <div className="bg-paper-raised border border-ink/10 rounded-sm p-5 sticky top-4">
+            <h2 className="font-display font-semibold text-ink mb-3">Interested?</h2>
             <InquiryForm propertyId={property.id} />
           </div>
         </div>

@@ -47,26 +47,9 @@ cp .env.example .env.local   # then fill in your real values
 npm run dev
 ```
 
-## What's been built since this scaffold (MVP complete — go / no-go ready)
+## Suggested next build steps
 
-✅ Owner login (`app/login/page.tsx`) — phone OTP via Supabase Auth, Ghana number normalization
-
-✅ Owner dashboard (`app/dashboard/page.tsx`) — lists the logged-in owner's own properties
-
-✅ New listing form (`app/dashboard/new/page.tsx`) — full property details + multi-photo upload straight to R2
-
-✅ Edit/delete listing (`app/dashboard/edit/[id]/page.tsx`) — update any field or delete; protected by Row Level Security
-
-✅ Property detail page (`app/properties/[id]/page.tsx`) — photo gallery + inquiry form
-
-✅ Inquiries inbox (`app/dashboard/inquiries/page.tsx`) — all inquiries across the owner's properties, most recent first, tap-to-call
-
-✅ Inquiry form component (`components/InquiryForm.tsx`) — reusable client-side form posting to `/api/inquiries`
-
-## Remaining work / future enhancements
-
-- Owner verification UI (admin screen to review/approve owners; for now flip `verification_status` manually in the Supabase table editor)
-- Marking an inquiry as "read" or archiving it
-- Reordering/deleting individual photos on an existing listing (photos are currently only added at creation time)
-- `updated_at` trigger on `properties` — ✅ added in this migration to replace the manual timestamp set in `app/dashboard/edit/[id]/page.tsx`
-- Tests (none exist yet — no testing framework configured)
+1. Owner signup/login page using Supabase phone auth
+2. "New listing" form: property details + photo upload (call `/api/upload` for each photo to get a presigned URL, PUT the file directly to R2, then insert a `property_media` row with the returned `key`/`publicUrl`)
+3. Property detail page (`app/properties/[id]/page.tsx`) with an inquiry form that posts to `/api/inquiries`
+4. Simple admin view for manually verifying new owners (flip `verification_status` in `profiles`)

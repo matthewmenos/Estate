@@ -28,8 +28,8 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
 
   if (status === "sent") {
     return (
-      <p className="text-sm text-brand-dark bg-brand/10 rounded-md p-3">
-        Thanks — the owner will be in touch with you directly.
+      <p className="text-sm text-ink bg-gold/10 border border-gold/30 rounded-sm p-3">
+        Sent. The owner will be in touch with you directly.
       </p>
     );
   }
@@ -37,41 +37,41 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <label className="block text-sm font-medium mb-1">Your name</label>
+        <label className="block text-sm font-medium text-ink mb-1">Your name</label>
         <input
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Your phone number</label>
+        <label className="block text-sm font-medium text-ink mb-1">Your phone number</label>
         <input
           required
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1">Message (optional)</label>
+        <label className="block text-sm font-medium text-ink mb-1">Message (optional)</label>
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={3}
           placeholder="I'm interested in viewing this property…"
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+          className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
         />
       </div>
       {status === "error" && (
-        <p className="text-sm text-red-600">Something went wrong — please try again.</p>
+        <p className="text-sm text-rust">Something went wrong — please try again.</p>
       )}
       <button
         type="submit"
         disabled={status === "sending"}
-        className="w-full rounded-md bg-brand text-white py-2 text-sm font-medium disabled:opacity-50"
+        className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium hover:bg-rust-dark transition-colors disabled:opacity-50"
       >
         {status === "sending" ? "Sending…" : "Contact owner"}
       </button>

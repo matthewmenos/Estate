@@ -67,8 +67,8 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-xl font-bold text-brand-dark mb-1">Owner login</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1 className="text-xl font-bold text-ink mb-1">Owner login</h1>
+      <p className="text-slate text-sm mb-6">
         List and manage your properties on Accra Rentals.
       </p>
 
@@ -82,14 +82,14 @@ export default function LoginPage() {
               placeholder="024 123 4567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-brand text-white py-2 text-sm font-medium disabled:opacity-50"
+            className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Sending code…" : "Send code"}
           </button>
@@ -107,21 +107,21 @@ export default function LoginPage() {
               placeholder="123456"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm tracking-widest"
+              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm tracking-widest"
             />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-brand text-white py-2 text-sm font-medium disabled:opacity-50"
+            className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
           >
             {loading ? "Verifying…" : "Verify & log in"}
           </button>
           <button
             type="button"
             onClick={() => setStep("phone")}
-            className="w-full text-sm text-gray-500"
+            className="w-full text-sm text-slate"
           >
             Use a different number
           </button>
