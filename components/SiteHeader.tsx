@@ -6,10 +6,19 @@ import { supabaseBrowser } from "@/lib/supabase";
 
 export default function SiteHeader() {
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    supabaseBrowser.auth.getUser().then(({ data }) => {
+    supabaseBrowser.auth.getUser().then(async ({ data }) => {
       setLoggedIn(!!data.user);
+      if (data.user) {
+        const { data: profile } = await supabaseBrowser
+          .from("profiles")
+          .select("is_admin")
+          .eq("id", data.user.id)
+          .single();
+        setIsAdmin(!!profile?.is_admin);
+      }
     });
   }, []);
 
@@ -38,12 +47,19 @@ export default function SiteHeader() {
             Browse
           </Link>
           {loggedIn ? (
-            <Link
-              href="/dashboard"
-              className="rounded-md bg-ink text-paper-raised px-4 py-2 hover:bg-ink-soft transition-colors"
-            >
-              Dashboard
-            </Link>
+            <>
+              {isAdmin && (
+                <Link href="/admin" className="hidden sm:inline hover:text-rust transition-colors">
+                  Admin
+                </Link>
+              )}
+              <Link
+                href="/dashboard"
+                className="rounded-md bg-ink text-paper-raised px-4 py-2 hover:bg-ink-soft transition-colors"
+              >
+                Dashboard
+              </Link>
+            </>
           ) : (
             <Link
               href="/login"

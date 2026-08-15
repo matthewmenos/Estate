@@ -126,3 +126,28 @@ Since login is email/password but phone is the verified identifier, password res
 - `/api/password-reset/request` always returns the same generic response whether or not the phone number is registered, so the endpoint can't be used to check who has an account.
 - Only phone numbers with `phone_verified = true` can trigger a reset — an unverified/unclaimed number can't be used to hijack an account.
 - There's no rate limiting on reset attempts yet. Fine for early testing, but worth adding (e.g. via Supabase's rate limit settings, or a simple attempts counter) before this is exposed to real users, so someone can't hammer the endpoint guessing codes.
+
+## Round 6 — full admin dashboard
+
+`/admin` is now a proper section, not just the verification queue:
+
+- **Overview** (`app/admin/page.tsx`) — platform-wide stats: total owners, pending verifications, properties (available/total), tenants, inquiries, and total rent collected. Cards link to the relevant management page.
+- **Owners** (`app/admin/owners/page.tsx`) — every registered owner, verification status, listing count, and a toggle to grant/revoke admin access to other users.
+- **Properties** (`app/admin/properties/page.tsx`) — every listing platform-wide regardless of owner, filterable by status, with Unlist/Relist and permanent Delete actions — for moderating spam or problem listings.
+- **Verification queue** (`app/admin/verify/page.tsx`) — unchanged functionally, just moved onto the shared admin layout below.
+
+All four share `lib/useAdminGuard.ts` (checks `is_admin`, redirects otherwise) and `components/AdminNav.tsx` (the tab bar across the top). The "Admin" link only appears in the site header for users with `is_admin = true`.
+
+**Database access:** admins previously could only read/update `profiles` (for verification). `0005_admin_full_access.sql` adds the same `is_admin` escape hatch as RLS policies on `properties`, `property_media`, `inquiries`, `tenants`, and `rent_payments`, so the new pages can actually see and moderate everything.
+
+### Run the new migration
+
+Run `supabase/migrations/0005_admin_full_access.sql` after `0001`–`0004`.
+
+### First admin
+
+Same as before — run this once in the Supabase SQL editor for your own account:
+```sql
+update public.profiles set is_admin = true where phone = '+233XXXXXXXXX';
+```
+After that, you can promote further admins directly from `/admin/owners` instead of touching SQL again.
