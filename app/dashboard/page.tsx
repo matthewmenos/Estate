@@ -46,6 +46,12 @@ export default function DashboardPage() {
         <h1 className="text-xl font-bold text-ink">Your listings</h1>
         <div className="flex gap-2">
           <Link
+            href="/dashboard/tenants"
+            className="rounded-sm border border-ink text-ink px-4 py-2 text-sm font-medium"
+          >
+            Tenants
+          </Link>
+          <Link
             href="/dashboard/inquiries"
             className="rounded-sm border border-ink text-ink px-4 py-2 text-sm font-medium"
           >

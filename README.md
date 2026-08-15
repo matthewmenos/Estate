@@ -67,3 +67,26 @@ npm run dev
 ### Run the new migration
 
 In the Supabase SQL editor, after `0001_init.sql`, also run `supabase/migrations/0002_admin_and_views.sql`.
+
+## Round 3 additions — tenants, rent tracking, and Hubtel mobile money
+
+- **Tenant management** (`app/dashboard/tenants/`) — add a tenant to a property (marks it occupied), view all tenants with their latest rent status at a glance, and a per-tenant detail page with full payment history.
+- **Rent payment tracking** (`0003_tenants_and_payments.sql`) — a `rent_payments` table per tenant. Add a due payment for any date, then either mark it paid manually or send a real mobile money charge request.
+- **Hubtel mobile money integration** (`lib/hubtel.ts`, `app/api/payments/initiate`, `app/api/payments/callback`) — "Request MoMo" on a pending payment sends a charge prompt to the tenant's phone via Hubtel's Receive Money API. Hubtel calls `/api/payments/callback` with the result, which updates the payment to `paid` or `failed`.
+
+### Setting up Hubtel
+
+1. Create a merchant account at [unity.hubtel.com](https://unity.hubtel.com) and set up a **Receive Money (POS Sales)** account — this gives you a POS Sales ID.
+2. Generate a Client ID + Client Secret under API settings.
+3. Add `HUBTEL_CLIENT_ID`, `HUBTEL_CLIENT_SECRET`, `HUBTEL_POS_SALES_ID`, and `APP_BASE_URL` to `.env.local`.
+4. **Important:** Hubtel's callback needs a publicly reachable URL — `localhost` won't work. Use a tunnel (`ngrok http 3000` or `cloudflared tunnel`) for local testing, or just test this feature after deploying to Vercel.
+5. The exact callback payload shape can vary by Hubtel account/integration type — `app/api/payments/callback/route.ts` reads a few common field name variants defensively, but it's worth triggering one real test payment and logging the raw callback body to confirm the shape matches what your account sends.
+
+### Run the new migration
+
+Run `supabase/migrations/0003_tenants_and_payments.sql` in the Supabase SQL editor, after `0001` and `0002`.
+
+### What's still manual
+
+- No automatic recurring due-date generation yet — you add each month's due payment by hand on the tenant page. Worth automating (e.g. a scheduled function that creates next month's payment a few days before `rent_due_day`) once this is validated.
+- No SMS/WhatsApp reminder when a payment is overdue.
