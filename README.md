@@ -53,3 +53,17 @@ npm run dev
 2. "New listing" form: property details + photo upload (call `/api/upload` for each photo to get a presigned URL, PUT the file directly to R2, then insert a `property_media` row with the returned `key`/`publicUrl`)
 3. Property detail page (`app/properties/[id]/page.tsx`) with an inquiry form that posts to `/api/inquiries`
 4. Simple admin view for manually verifying new owners (flip `verification_status` in `profiles`)
+
+## Round 2 additions
+
+- **Admin verification queue** (`app/admin/verify/page.tsx`) — approve/reject pending owners. Make yourself an admin by running the commented SQL at the bottom of `0002_admin_and_views.sql` in the Supabase SQL editor.
+- **Search/filter on the homepage** (`components/ListingsFilter.tsx`) — filter by listing type, min bedrooms, max price. Client-side over the already-fetched list; fine at MVP scale, worth moving server-side once you have hundreds of listings.
+- **WhatsApp contact button** (`components/WhatsAppButton.tsx`) — deep-links to `wa.me` with a prefilled message, shown alongside the in-app inquiry form so you can see which one renters actually use.
+- **View counts** — `properties.view_count`, incremented via the `increment_property_views` RPC (avoids a read-modify-write race) each time someone loads a property page. Visible on the owner dashboard.
+- **Image resizing at upload** — `/api/upload` now accepts a raw file, resizes it with `sharp` into thumb (400px) / medium (1200px) / capped-original (2000px) WebP variants, and pushes all three to R2. Cards use `thumb_url`, the detail gallery uses `medium_url`.
+- **Photo manager on the edit page** (`components/PhotoManager.tsx`) — add photos, remove them, reorder with arrow buttons. First photo is the cover.
+- **Per-listing SEO metadata** — `generateMetadata` on the property detail page sets a dynamic title, description, and Open Graph image per listing.
+
+### Run the new migration
+
+In the Supabase SQL editor, after `0001_init.sql`, also run `supabase/migrations/0002_admin_and_views.sql`.

@@ -43,32 +43,21 @@ export default function NewListingPage() {
   }
 
   async function uploadPhoto(propertyId: string, photo: PendingPhoto, sortOrder: number) {
-    // 1. Ask our API for a presigned R2 upload URL
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        propertyId,
-        fileName: photo.file.name,
-        contentType: photo.file.type,
-      }),
-    });
-    if (!res.ok) throw new Error("Failed to get upload URL");
-    const { uploadUrl, publicUrl, key } = await res.json();
+    // Send the raw file to our server, which resizes it (thumb + medium + capped
+    // original) with sharp and pushes all three variants to R2.
+    const body = new FormData();
+    body.append("file", photo.file);
+    body.append("propertyId", propertyId);
 
-    // 2. Upload the file directly to R2 (never touches our server)
-    const putRes = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": photo.file.type },
-      body: photo.file,
-    });
-    if (!putRes.ok) throw new Error("Failed to upload photo to storage");
+    const res = await fetch("/api/upload", { method: "POST", body });
+    if (!res.ok) throw new Error("Failed to upload photo");
+    const { original, thumb, medium } = await res.json();
 
-    // 3. Record the photo against the property
     const { error } = await supabaseBrowser.from("property_media").insert({
       property_id: propertyId,
-      url: publicUrl,
-      r2_key: key,
+      url: original,
+      thumb_url: thumb,
+      medium_url: medium,
       media_type: "image",
       sort_order: sortOrder,
     });

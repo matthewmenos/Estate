@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase";
-import PropertyCard from "@/components/PropertyCard";
+import ListingsFilter from "@/components/ListingsFilter";
 
 export const revalidate = 60;
 
@@ -9,7 +9,7 @@ async function getListings() {
   const { data, error } = await supabase
     .from("properties")
     .select(
-      "id, title, address, city, price, currency, listing_type, property_media(url, sort_order), profiles(verification_status)"
+      "id, title, address, city, price, currency, listing_type, property_type, bedrooms, property_media(url, thumb_url, medium_url, sort_order), profiles(verification_status)"
     )
     .eq("status", "available")
     .order("created_at", { ascending: false });
@@ -119,23 +119,18 @@ export default async function HomePage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {listings.map((property: any) => {
+          <ListingsFilter
+            listings={listings.map((property: any) => {
               const cover = property.property_media?.sort(
                 (a: any, b: any) => a.sort_order - b.sort_order
               )[0];
-              return (
-                <PropertyCard
-                  key={property.id}
-                  property={{
-                    ...property,
-                    coverUrl: cover?.url,
-                    verified: property.profiles?.verification_status === "verified",
-                  }}
-                />
-              );
+              return {
+                ...property,
+                coverUrl: cover?.thumb_url || cover?.url,
+                verified: property.profiles?.verification_status === "verified",
+              };
             })}
-          </div>
+          />
         )}
       </section>
     </main>

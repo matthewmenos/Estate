@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase";
+import PhotoManager from "@/components/PhotoManager";
 
 export default function EditListingPage() {
   const params = useParams<{ id: string }>();
@@ -264,6 +265,10 @@ export default function EditListingPage() {
           </button>
         </div>
       </form>
+
+      <div className="mt-8">
+        <PhotoManager propertyId={params.id} />
+      </div>
     </main>
   );
 }

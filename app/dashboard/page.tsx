@@ -12,6 +12,7 @@ type Property = {
   price: number;
   currency: string;
   listing_type: string;
+  view_count: number;
 };
 
 export default function DashboardPage() {
@@ -29,7 +30,7 @@ export default function DashboardPage() {
 
       const { data } = await supabaseBrowser
         .from("properties")
-        .select("id, title, status, price, currency, listing_type")
+        .select("id, title, status, price, currency, listing_type, view_count")
         .eq("owner_id", userData.user.id)
         .order("created_at", { ascending: false });
 
@@ -76,7 +77,7 @@ export default function DashboardPage() {
               <div>
                 <p className="font-medium">{p.title}</p>
                 <p className="text-xs text-slate capitalize">
-                  {p.status} · {p.listing_type}
+                  {p.status} · {p.listing_type} · {p.view_count} view{p.view_count === 1 ? "" : "s"}
                 </p>
               </div>
               <p className="font-semibold text-rust text-sm">
