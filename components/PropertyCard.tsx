@@ -18,7 +18,7 @@ export default function PropertyCard({ property }: { property: CardProperty }) {
   return (
     <Link
       href={`/properties/${property.id}`}
-      className="group block bg-paper-raised border border-ink/10 rounded-sm overflow-hidden hover:border-rust/40 transition-colors"
+      className="group block bg-paper-raised border border-ink/10 rounded-sm overflow-hidden shadow-soft hover:shadow-raised hover:-translate-y-1 hover:border-rust/30 transition-all duration-300"
     >
       <div className="relative h-44 bg-ink/5">
         {property.coverUrl && (

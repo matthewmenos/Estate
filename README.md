@@ -171,3 +171,59 @@ ADMIN_PHONES=+233241234567
 ADMIN_EMAILS=you@example.com
 ```
 Then just sign up normally and visit `/admin` — no SQL required.
+
+## Round 7 — proper email confirmation + admin password bootstrap
+
+### Email confirmation now handled correctly
+
+Previously, signup assumed Supabase's "Confirm email" setting was off. Now both cases work:
+
+- **If "Confirm email" is off:** unchanged — signup goes straight to phone verification.
+- **If "Confirm email" is on:** signup shows a "check your email" screen. Clicking the emailed link lands the user on `/auth/callback`, which picks up their new session, finishes creating their profile, and forwards them to phone verification (using the name/phone they originally entered, carried through via Supabase's `user_metadata`).
+
+If you turn "Confirm email" on, set the **Redirect URLs** allowlist in Supabase (Authentication → URL Configuration) to include your app's `/auth/callback` — Supabase rejects redirects to URLs not on that list.
+
+### Admin password bootstrap
+
+`ADMIN_PASSWORD` in `.env.local` is an optional master key: any logged-in user who enters it at `/admin/claim` immediately becomes an admin. This solves the original chicken-and-egg problem — previously, becoming the first admin required your account's email/phone to already match `ADMIN_EMAILS`/`ADMIN_PHONES` exactly, with no path for an existing account under different credentials.
+
+- Every "you don't have access" screen under `/admin` now links to `/admin/claim`.
+- The check uses a constant-time comparison (`checkAdminPassword` in `lib/adminConfig.ts`) so response timing can't leak the password character-by-character.
+- There's a small in-memory attempt limiter (5 tries) on `/api/admin/claim` — it resets on every deploy/restart and isn't shared across serverless instances, so treat it as a speed bump, not real rate limiting. Worth replacing with something durable (Upstash/Redis, or a DB-backed counter) before this is exposed to real traffic.
+- **Leave `ADMIN_PASSWORD` unset in production once you no longer need it.** It's a standing master key as long as it's set — fine for initial setup, but worth removing from your environment after you've claimed your admin account, then re-adding temporarily only if you need to bootstrap another admin later.
+
+## Round 8 — hardened Arkesel configuration
+
+`lib/arkesel.ts` was relying on a hardcoded sender ID and treating any HTTP 200 as success, which doesn't hold up against how Arkesel's API actually behaves. Fixed:
+
+- **Sender ID is now env-configured** (`ARKESEL_SENDER_ID`) instead of hardcoded to `"AccraRent"` — set it to whatever you actually register and get approved in your Arkesel dashboard.
+- **Fails fast with a clear error if `ARKESEL_API_KEY` is missing**, instead of letting it surface later as an opaque 401 from Arkesel that looks like a code bug.
+- **Checks for logical errors in the response body, not just HTTP status.** Arkesel can return HTTP 200 with an error code in the body (`{"code": "1001", "message": "..."}`) — a request can "succeed" at the HTTP layer while failing logically. `sendPhoneOtp` now throws on this; `verifyPhoneOtp` treats it as "not verified" rather than a thrown error, since a wrong/expired code is an expected outcome, not a bug.
+- **Retries once on transient network failure** (not on a wrong code, which won't fix itself by retrying) — a short backoff, per Arkesel's own guidance on handling flaky delivery.
+- **Voice OTP fallback is wired in but unused by default** — `sendPhoneOtp(phone, "voice")` — Arkesel's documented fallback for numbers where SMS delivery is unreliable. Nothing calls this yet; worth adding a "didn't get it? Try a call instead" option on `/verify-phone` if SMS delivery turns out to be flaky for some networks.
+
+**Still unverified against a real account** (same caveat as always): the specific success/error code values (`"1100"` for verify success, `"1001"` for missing-field) come from Arkesel's public docs and troubleshooting guides, not a live test. Confirm both against your own account's real responses before relying on this in production — log the raw `data` object from one real send/verify cycle and compare.
+
+## Round 9 — 3D tilt houses + typography system
+
+### Design decisions (worth knowing before you extend this)
+
+**The house scene is deliberately scoped to entry/marketing surfaces, not the whole app.** It appears on the homepage hero (full scene, `components/TiltHouses.tsx` `variant="full"`) and behind the login/signup/verify-phone/forgot-password/reset-password forms (`variant="accent"`, via the new shared `components/AuthPageShell.tsx`). The dashboard, admin section, and property detail page stay undecorated — task-oriented screens benefit from focus, not ambient motion, and constant parallax behind a rent-tracking table would actively hurt usability. If you want it elsewhere later, wrap that page's content in `<AuthPageShell>` or drop `<TiltHouses variant="accent" />` into a `relative` container directly.
+
+### How the tilt effect works
+
+- **Desktop (has a mouse):** the whole house scene tilts in 3D (CSS `perspective` + `rotateX/rotateY`) following the cursor, and each house also drifts slightly on its own axis proportional to its "depth" — nearer houses (larger, more opaque) move more, giving real parallax rather than everything moving in lockstep.
+- **Touch devices:** no mouse listener is attached at all (detected via `(hover: none)`) — houses still render with their gentle idle float, just without cursor-tilt. Deliberately did **not** wire up `deviceorientation`/gyroscope tilt — that requires an intrusive permission prompt on iOS Safari, which is a poor trade for a background decoration.
+- **`prefers-reduced-motion`:** respected in two places — the JS never attaches the tilt listener, and a CSS media query independently kills the idle float animation. Belt-and-suspenders, so it can't slip through on some timing edge case.
+- **Zero new dependencies** — pure CSS 3D transforms and `requestAnimationFrame`-throttled mousemove, no animation library.
+
+### Typography changes
+
+- Added a real fluid type scale to `tailwind.config.ts`: `text-hero` (clamps ~44px→72px depending on viewport, tight tracking, used only for the homepage headline) and `text-section` (clamps ~24px→34px, used for section headings).
+- Fixed a real inconsistency: headings were mixing `font-bold` with the Zilla Slab display face, which already carries its own weight scale (500/600/700) — `font-bold` (700) was fighting the face's natural rhythm on some elements. Standardized all page headings to `font-semibold`.
+- Added `text-balance` on the hero headline/subhead and a couple of section headings, so multi-line text wraps more evenly instead of leaving an orphaned word — a small detail, but a real readability improvement Tailwind 3.4+ supports natively.
+- Global heading tracking tightened slightly (`letter-spacing: -0.01em` on all `h1`/`h2`/`h3`) for a more considered, less default-webfont feel.
+
+### UI polish
+
+- Added two elevation tokens (`shadow-soft`, `shadow-raised`) and applied them to property cards (lift + shadow on hover, replacing a flat border-color change) and the hero's CTA buttons (soft shadow at rest, raised + lifted on hover).

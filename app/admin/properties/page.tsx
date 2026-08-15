@@ -64,13 +64,15 @@ export default function AdminPropertiesPage() {
 
   if (status === "checking") return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-slate">Loading…</main>;
   if (status === "denied")
-    return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-rust">You don't have access to this page.</main>;
+    return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-rust">You don't have access to this page.{" "}
+        <a href="/admin/claim" className="text-rust hover:underline">Have an admin password?</a>
+      </main>;
 
   const filtered = filter === "all" ? properties : properties.filter((p) => p.status === filter);
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-xl font-bold text-ink mb-1">Admin</h1>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Admin</h1>
       <p className="text-sm text-slate mb-4">Platform-wide overview and moderation.</p>
       <AdminNav />
 

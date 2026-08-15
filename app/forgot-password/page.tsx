@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import AuthPageShell from "@/components/AuthPageShell";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -25,8 +26,8 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-xl font-bold text-ink mb-1">Forgot your password?</h1>
+    <AuthPageShell>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Forgot your password?</h1>
       <p className="text-slate text-sm mb-6">
         Enter the phone number on your account. We'll text you a code to reset your password.
       </p>
@@ -51,6 +52,6 @@ export default function ForgotPasswordPage() {
           {loading ? "Sending…" : "Send code"}
         </button>
       </form>
-    </main>
+    </AuthPageShell>
   );
 }

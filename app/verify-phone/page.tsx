@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import AuthPageShell from "@/components/AuthPageShell";
 import { supabaseBrowser } from "@/lib/supabase";
 
 function VerifyPhoneForm() {
@@ -60,8 +61,8 @@ function VerifyPhoneForm() {
   }
 
   return (
-    <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-xl font-bold text-ink mb-1">Verify your phone</h1>
+    <AuthPageShell>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Verify your phone</h1>
       <p className="text-slate text-sm mb-6">
         We sent a 6-digit code to {phone || "your phone"}.
       </p>
@@ -96,7 +97,7 @@ function VerifyPhoneForm() {
           {resending ? "Resending…" : "Resend code"}
         </button>
       </form>
-    </main>
+    </AuthPageShell>
   );
 }
 

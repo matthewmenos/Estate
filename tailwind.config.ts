@@ -33,6 +33,29 @@ const config: Config = {
         body: ["var(--font-body)"],
         mono: ["var(--font-mono)"],
       },
+      fontSize: {
+        hero: [
+          "clamp(2.75rem, 5vw + 1rem, 4.5rem)",
+          { lineHeight: "1.04", letterSpacing: "-0.025em", fontWeight: "600" },
+        ],
+        section: [
+          "clamp(1.5rem, 1.5vw + 1rem, 2.125rem)",
+          { lineHeight: "1.15", letterSpacing: "-0.015em", fontWeight: "600" },
+        ],
+      },
+      boxShadow: {
+        soft: "0 1px 2px rgba(23,35,61,0.05), 0 6px 16px rgba(23,35,61,0.06)",
+        raised: "0 12px 32px rgba(23,35,61,0.14), 0 2px 6px rgba(23,35,61,0.08)",
+      },
+      keyframes: {
+        houseFloat: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-10px)" },
+        },
+      },
+      animation: {
+        "house-float": "houseFloat 6s ease-in-out infinite",
+      },
     },
   },
   plugins: [],

@@ -14,4 +14,14 @@
 
 h1, h2, h3 {
   font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Belt-and-suspenders: TiltHouses already skips its JS-driven tilt/parallax
+   for reduced-motion users, but this ensures the idle float animation is
+   killed at the CSS layer too, regardless of any JS timing edge case. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-house-float {
+    animation: none !important;
+  }
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AuthPageShell from "@/components/AuthPageShell";
 import { supabaseBrowser } from "@/lib/supabase";
 
 export default function SignupPage() {
@@ -10,6 +11,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
 
   function updateField(key: string, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -20,9 +22,17 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
 
+    // emailRedirectTo tells Supabase where to send the user after they click
+    // the confirmation link in their email — /auth/callback picks the flow
+    // back up from there. We also stash their name/phone in user_metadata so
+    // /auth/callback can finish creating the profile without asking again.
     const { data, error: signUpError } = await supabaseBrowser.auth.signUp({
       email: form.email,
       password: form.password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { full_name: form.name, pending_phone: form.phone },
+      },
     });
 
     if (signUpError || !data.user) {
@@ -31,38 +41,48 @@ export default function SignupPage() {
       return;
     }
 
-    // NOTE: if your Supabase project has "Confirm email" enabled, data.session
-    // will be null here until the user clicks the confirmation link — in that
-    // case this profile upsert (and the OTP send after it) needs to happen
-    // after they confirm and log in, not immediately. Disable email
-    // confirmation for now, or adapt this flow, depending on what you want.
-    await supabaseBrowser.from("profiles").upsert(
-      { id: data.user.id, full_name: form.name, email: form.email },
-      { onConflict: "id" }
-    );
+    // If "Confirm email" is OFF in your Supabase project, signUp() returns
+    // an active session immediately and we can continue straight to phone
+    // verification. If it's ON, data.session is null — the user must click
+    // the emailed link first, which lands them on /auth/callback instead.
+    if (data.session) {
+      await supabaseBrowser.from("profiles").upsert(
+        { id: data.user.id, full_name: form.name, email: form.email },
+        { onConflict: "id" }
+      );
 
-    // Kick off phone verification right away.
-    const { data: sessionData } = await supabaseBrowser.auth.getSession();
-    const token = sessionData.session?.access_token;
+      const token = data.session.access_token;
+      await fetch("/api/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ phone: form.phone }),
+      });
 
-    const res = await fetch("/api/otp/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ phone: form.phone }),
-    });
-
-    setLoading(false);
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Account created, but sending the code failed. Try again from the next screen.");
+      setLoading(false);
+      router.push(`/verify-phone?phone=${encodeURIComponent(form.phone)}`);
+      return;
     }
 
-    router.push(`/verify-phone?phone=${encodeURIComponent(form.phone)}`);
+    setLoading(false);
+    setAwaitingConfirmation(true);
+  }
+
+  if (awaitingConfirmation) {
+    return (
+      <AuthPageShell>
+        <h1 className="text-2xl font-semibold text-ink mb-2">Check your email</h1>
+        <p className="text-slate text-sm">
+          We sent a confirmation link to <strong>{form.email}</strong>. Click it to
+          activate your account — you'll come straight back here to verify your
+          phone number next.
+        </p>
+      </AuthPageShell>
+    );
   }
 
   return (
-    <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-xl font-bold text-ink mb-1">Create your owner account</h1>
+    <AuthPageShell>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Create your owner account</h1>
       <p className="text-slate text-sm mb-6">List and manage your properties on Accra Rentals.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -123,6 +143,6 @@ export default function SignupPage() {
           </Link>
         </p>
       </form>
-    </main>
+    </AuthPageShell>
   );
 }

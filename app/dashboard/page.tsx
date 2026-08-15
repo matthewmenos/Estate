@@ -43,7 +43,7 @@ export default function DashboardPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-ink">Your listings</h1>
+        <h1 className="text-2xl font-semibold text-ink">Your listings</h1>
         <div className="flex gap-2">
           <Link
             href="/dashboard/tenants"

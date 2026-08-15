@@ -44,7 +44,7 @@ export default function InquiriesPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-bold text-ink">Inquiries</h1>
+        <h1 className="text-2xl font-semibold text-ink">Inquiries</h1>
         <Link href="/dashboard" className="text-sm text-slate">
           ← Back to listings
         </Link>

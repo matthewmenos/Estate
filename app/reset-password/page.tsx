@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import AuthPageShell from "@/components/AuthPageShell";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -42,8 +43,8 @@ function ResetPasswordForm() {
 
   if (done) {
     return (
-      <main className="mx-auto max-w-sm px-4 py-16">
-        <h1 className="text-xl font-bold text-ink mb-2">Password reset</h1>
+      <AuthPageShell>
+        <h1 className="text-2xl font-semibold text-ink mb-2">Password reset</h1>
         <p className="text-slate text-sm mb-6">
           Your password has been updated. You can now log in with your new password.
         </p>
@@ -53,13 +54,13 @@ function ResetPasswordForm() {
         >
           Go to login
         </button>
-      </main>
+      </AuthPageShell>
     );
   }
 
   return (
-    <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-xl font-bold text-ink mb-1">Reset your password</h1>
+    <AuthPageShell>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Reset your password</h1>
       <p className="text-slate text-sm mb-6">
         Enter the code sent to {phone || "your phone"} and choose a new password.
       </p>
@@ -107,7 +108,7 @@ function ResetPasswordForm() {
           {loading ? "Resetting…" : "Reset password"}
         </button>
       </form>
-    </main>
+    </AuthPageShell>
   );
 }
 

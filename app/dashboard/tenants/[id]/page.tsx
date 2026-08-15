@@ -128,7 +128,7 @@ export default function TenantDetailPage() {
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-xl font-bold text-ink">{tenant.name}</h1>
+      <h1 className="text-2xl font-semibold text-ink">{tenant.name}</h1>
       <p className="text-sm text-slate mb-1">{tenant.properties?.title}</p>
       <p className="text-sm text-slate font-mono mb-6">{tenant.phone}</p>
 

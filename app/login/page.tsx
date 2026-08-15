@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import AuthPageShell from "@/components/AuthPageShell";
 import { supabaseBrowser } from "@/lib/supabase";
 
 export default function LoginPage() {
@@ -35,8 +36,8 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto max-w-sm px-4 py-16">
-      <h1 className="text-xl font-bold text-ink mb-1">Owner login</h1>
+    <AuthPageShell>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Owner login</h1>
       <p className="text-slate text-sm mb-6">List and manage your properties on Accra Rentals.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -80,6 +81,6 @@ export default function LoginPage() {
           </Link>
         </p>
       </form>
-    </main>
+    </AuthPageShell>
   );
 }

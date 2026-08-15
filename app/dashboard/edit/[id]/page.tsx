@@ -135,7 +135,7 @@ export default function EditListingPage() {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-8">
-      <h1 className="text-xl font-bold text-ink mb-6">Edit listing</h1>
+      <h1 className="text-2xl font-semibold text-ink mb-6">Edit listing</h1>
 
       <form onSubmit={handleSave} className="space-y-5">
         <div>

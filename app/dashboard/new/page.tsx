@@ -116,7 +116,7 @@ export default function NewListingPage() {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-8">
-      <h1 className="text-xl font-bold text-ink mb-6">List a property</h1>
+      <h1 className="text-2xl font-semibold text-ink mb-6">List a property</h1>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
