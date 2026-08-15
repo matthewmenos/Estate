@@ -151,3 +151,23 @@ Same as before — run this once in the Supabase SQL editor for your own account
 update public.profiles set is_admin = true where phone = '+233XXXXXXXXX';
 ```
 After that, you can promote further admins directly from `/admin/owners` instead of touching SQL again.
+
+## Round 7 — admin config via env, no more manual SQL
+
+Admin status is now driven by `ADMIN_PHONES` / `ADMIN_EMAILS` in `.env.local` instead of a one-off SQL command:
+
+- **How promotion happens:** the DB's `is_admin` column is still what Row Level Security actually checks (env vars aren't readable from SQL policies), but it's now kept in sync with your env allowlist automatically:
+  - On phone verification (`app/api/otp/verify`) — if the phone or account email matches, `is_admin` is set on the spot.
+  - On visiting `/admin` — `lib/useAdminGuard.ts` calls `/api/admin/sync` before denying access, which re-checks the allowlist and promotes if it matches. This covers anyone added to the env *after* they already verified — no need to re-verify their phone.
+- **This only ever promotes, never demotes.** Removing someone from `ADMIN_PHONES`/`ADMIN_EMAILS` won't automatically revoke existing admin access — use the toggle on `/admin/owners` for that. Auto-demotion on env change felt like the wrong default (a redeploy shouldn't silently lock someone out mid-session).
+- **The `/admin/owners` manual toggle still exists** as an override, for promoting someone not on the env list (e.g. a support hire) without redeploying.
+- **Heads up on the header:** the "Admin" link in the site header reads directly from the DB (not the env check) to avoid an extra API call on every page load. If you've just added yourself to `ADMIN_PHONES`/`ADMIN_EMAILS`, the link won't appear until you've visited `/admin` once directly by URL — after that, the DB is updated and the header shows it normally.
+
+### Setting your admin phone/email
+
+Add your number and/or email to `.env.local`:
+```
+ADMIN_PHONES=+233241234567
+ADMIN_EMAILS=you@example.com
+```
+Then just sign up normally and visit `/admin` — no SQL required.

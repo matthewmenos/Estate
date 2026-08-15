@@ -25,7 +25,25 @@ export function useAdminGuard() {
         .single();
 
       if (cancelled) return;
-      setStatus(me?.is_admin ? "allowed" : "denied");
+
+      if (me?.is_admin) {
+        setStatus("allowed");
+        return;
+      }
+
+      // Not currently an admin in the DB — check whether they're on the
+      // env allowlist (ADMIN_PHONES / ADMIN_EMAILS) and, if so, get
+      // promoted automatically rather than making them re-verify.
+      const { data: sessionData } = await supabaseBrowser.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const res = await fetch("/api/admin/sync", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await res.json().catch(() => ({ isAdmin: false }));
+
+      if (cancelled) return;
+      setStatus(result.isAdmin ? "allowed" : "denied");
     }
 
     check();
