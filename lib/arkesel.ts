@@ -32,7 +32,7 @@ export async function sendPhoneOtp(phone: string) {
       medium: "sms",
       message: "Your Accra Rentals verification code is %otp_code%.",
       number: normalizeGhanaPhone(phone),
-      sender_id: "AccraRent", // must be a registered sender ID on your Arkesel account
+      sender_id: "MenosEmpire", // must be a registered sender ID on your Arkesel account
       type: "numeric",
     }),
   });
