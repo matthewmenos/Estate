@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase";
-import { useAdminGuard } from "@/lib/useAdminGuard";
-import AdminNav from "@/components/AdminNav";
 
 type Stats = {
   totalOwners: number;
@@ -17,12 +15,9 @@ type Stats = {
 };
 
 export default function AdminOverviewPage() {
-  const status = useAdminGuard();
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
-    if (status !== "allowed") return;
-
     async function load() {
       const [owners, pending, properties, available, inquiries, tenants, paidPayments] =
         await Promise.all([
@@ -52,30 +47,23 @@ export default function AdminOverviewPage() {
       });
     }
     load();
-  }, [status]);
-
-  if (status === "checking") return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-slate">Loading…</main>;
-  if (status === "denied")
-    return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-rust">You don't have access to this page.{" "}
-        <a href="/admin/claim" className="text-rust hover:underline">Have an admin password?</a>
-      </main>;
+  }, []);
 
   const cards = stats
     ? [
         { label: "Owners", value: stats.totalOwners, href: "/admin/owners" },
         { label: "Pending verification", value: stats.pendingVerifications, href: "/admin/verify", flag: stats.pendingVerifications > 0 },
         { label: "Properties (available)", value: `${stats.availableProperties} / ${stats.totalProperties}`, href: "/admin/properties" },
-        { label: "Tenants", value: stats.totalTenants, href: "/dashboard/tenants" },
-        { label: "Inquiries", value: stats.totalInquiries, href: null },
+        { label: "Tenants", value: stats.totalTenants, href: "/admin/tenants" },
+        { label: "Inquiries", value: stats.totalInquiries, href: "/admin/inquiries" },
         { label: "Rent collected (paid)", value: `GHS ${stats.rentCollected.toLocaleString()}`, href: null },
       ]
     : [];
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-ink mb-1">Admin</h1>
-      <p className="text-sm text-slate mb-4">Platform-wide overview and moderation.</p>
-      <AdminNav />
+    <div>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Overview</h1>
+      <p className="text-sm text-slate mb-6">Platform-wide stats and moderation.</p>
 
       {!stats ? (
         <p className="text-sm text-slate">Loading stats…</p>
@@ -84,7 +72,7 @@ export default function AdminOverviewPage() {
           {cards.map((c) => {
             const inner = (
               <div
-                className={`border rounded-sm p-4 h-full ${
+                className={`border rounded-sm p-4 h-full shadow-soft ${
                   c.flag ? "border-rust/40 bg-rust/5" : "border-ink/10 bg-paper-raised"
                 }`}
               >
@@ -102,6 +90,6 @@ export default function AdminOverviewPage() {
           })}
         </div>
       )}
-    </main>
+    </div>
   );
 }

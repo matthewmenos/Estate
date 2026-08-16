@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase";
-import { useAdminGuard } from "@/lib/useAdminGuard";
-import AdminNav from "@/components/AdminNav";
 
 type Owner = {
   id: string;
@@ -24,7 +22,6 @@ const statusColor: Record<string, string> = {
 };
 
 export default function AdminOwnersPage() {
-  const status = useAdminGuard();
   const [owners, setOwners] = useState<Owner[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -40,8 +37,8 @@ export default function AdminOwnersPage() {
   }
 
   useEffect(() => {
-    if (status === "allowed") load();
-  }, [status]);
+    load();
+  }, []);
 
   async function toggleAdmin(owner: Owner) {
     setBusyId(owner.id);
@@ -50,26 +47,17 @@ export default function AdminOwnersPage() {
     setBusyId(null);
   }
 
-  if (status === "checking") return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-slate">Loading…</main>;
-  if (status === "denied")
-    return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-rust">You don't have access to this page.{" "}
-        <a href="/admin/claim" className="text-rust hover:underline">Have an admin password?</a>
-      </main>;
-
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-ink mb-1">Admin</h1>
-      <p className="text-sm text-slate mb-4">Platform-wide overview and moderation.</p>
-      <AdminNav />
-
-      <h2 className="font-display font-semibold text-ink mb-3">
-        All owners {owners.length > 0 && <span className="text-slate font-normal text-sm">({owners.length})</span>}
-      </h2>
+    <div>
+      <h1 className="text-2xl font-semibold text-ink mb-1">
+        Owners {owners.length > 0 && <span className="text-slate font-normal text-lg">({owners.length})</span>}
+      </h1>
+      <p className="text-sm text-slate mb-6">Every registered account. Promote or demote admin access here.</p>
 
       {loading ? (
         <p className="text-sm text-slate">Loading…</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10 shadow-soft">
           {owners.map((o) => (
             <div key={o.id} className="flex items-center justify-between px-4 py-3 gap-3">
               <div className="min-w-0">
@@ -95,6 +83,6 @@ export default function AdminOwnersPage() {
           ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }

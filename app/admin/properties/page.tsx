@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabaseBrowser } from "@/lib/supabase";
-import { useAdminGuard } from "@/lib/useAdminGuard";
-import AdminNav from "@/components/AdminNav";
 
 type Property = {
   id: string;
@@ -26,7 +24,6 @@ const statusColor: Record<string, string> = {
 };
 
 export default function AdminPropertiesPage() {
-  const status = useAdminGuard();
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -43,8 +40,8 @@ export default function AdminPropertiesPage() {
   }
 
   useEffect(() => {
-    if (status === "allowed") load();
-  }, [status]);
+    load();
+  }, []);
 
   async function setPropertyStatus(id: string, newStatus: string) {
     setBusyId(id);
@@ -62,24 +59,14 @@ export default function AdminPropertiesPage() {
     setBusyId(null);
   }
 
-  if (status === "checking") return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-slate">Loading…</main>;
-  if (status === "denied")
-    return <main className="mx-auto max-w-4xl px-4 py-8 text-sm text-rust">You don't have access to this page.{" "}
-        <a href="/admin/claim" className="text-rust hover:underline">Have an admin password?</a>
-      </main>;
-
   const filtered = filter === "all" ? properties : properties.filter((p) => p.status === filter);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-ink mb-1">Admin</h1>
-      <p className="text-sm text-slate mb-4">Platform-wide overview and moderation.</p>
-      <AdminNav />
-
-      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <h2 className="font-display font-semibold text-ink">
-          All properties {properties.length > 0 && <span className="text-slate font-normal text-sm">({properties.length})</span>}
-        </h2>
+    <div>
+      <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+        <h1 className="text-2xl font-semibold text-ink">
+          Properties {properties.length > 0 && <span className="text-slate font-normal text-lg">({properties.length})</span>}
+        </h1>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as any)}
@@ -92,13 +79,14 @@ export default function AdminPropertiesPage() {
           <option value="unlisted">Unlisted</option>
         </select>
       </div>
+      <p className="text-sm text-slate mb-6">Every listing on the platform, regardless of owner.</p>
 
       {loading ? (
         <p className="text-sm text-slate">Loading…</p>
       ) : filtered.length === 0 ? (
         <p className="text-sm text-slate">No properties match that filter.</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10 shadow-soft">
           {filtered.map((p) => (
             <div key={p.id} className="flex items-center justify-between px-4 py-3 gap-3 flex-wrap">
               <div className="min-w-0">
@@ -114,6 +102,12 @@ export default function AdminPropertiesPage() {
                 <span className={`text-xs font-medium px-2 py-1 rounded-sm capitalize ${statusColor[p.status]}`}>
                   {p.status}
                 </span>
+                <Link
+                  href={`/dashboard/edit/${p.id}`}
+                  className="text-xs rounded-sm border border-ink/30 text-ink px-2 py-1.5 font-medium"
+                >
+                  Edit
+                </Link>
                 {p.status !== "unlisted" ? (
                   <button
                     onClick={() => setPropertyStatus(p.id, "unlisted")}
@@ -143,6 +137,6 @@ export default function AdminPropertiesPage() {
           ))}
         </div>
       )}
-    </main>
+    </div>
   );
 }

@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase";
 
 export default function SiteHeader() {
+  const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -21,6 +23,10 @@ export default function SiteHeader() {
       }
     });
   }, []);
+
+  // The admin section has its own dark shell/nav (components/AdminShell.tsx) —
+  // the light public header would clash with it and duplicate navigation.
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return null;
 
   return (
     <header className="border-b border-ink/10 bg-paper-raised">

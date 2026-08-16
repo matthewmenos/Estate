@@ -239,3 +239,24 @@ Two real changes to `components/TiltHouses.tsx`, on top of the existing cursor-p
 **Z-index correctness:** a hovered house's z-index is deliberately capped below the hero content layer, so a mansion turning under your cursor can never visually cover or intercept clicks meant for the headline or CTA buttons, even if their positions overlap on a given viewport size.
 
 **Reduced-motion:** the hover-turn still triggers (it's a direct response to a deliberate hover, not ambient background motion — different from the auto-playing float/parallax, which is fully suppressed), but for `prefers-reduced-motion` users it's a plain scale-up with no rotation, so there's still a moment of natural interactivity without the 3D spin.
+
+## Round 11 — distinct admin dashboard + "schema cache" bug (not a code bug)
+
+### The "public.properties schema cache" error
+
+This wasn't a bug in the app code — grepped the whole codebase and there's no typo anywhere referencing a misspelled table name. This is a well-known Supabase/PostgREST gotcha: after running a migration that creates a new table, PostgREST's schema cache doesn't always pick it up immediately. Fix: **Settings → API → "Reload schema cache"** in your Supabase dashboard (or run `NOTIFY pgrst, 'reload schema';` in the SQL editor). Also worth double-checking all five migrations (`0001` through `0005`) actually ran, in order, if the cache reload doesn't fix it.
+
+### Admin dashboard now visually distinct from the owner dashboard
+
+Previously `/admin` reused the same light paper/rust theme as the rest of the site with a plain tab bar — easy to mistake for just another owner-facing page. Now:
+
+- **`components/AdminShell.tsx`** — a dark control-panel shell (ink background, gold accents) with a real sidebar nav (top bar on mobile), applied automatically to every `/admin/*` page via **`app/admin/layout.tsx`**. The public site's light header/footer now hide themselves on admin routes (`SiteHeader.tsx`/`SiteFooter.tsx` check the pathname) so there's no visual clash or duplicate navigation.
+- The access-guard check (`useAdminGuard`) is now centralized in `AdminShell` instead of repeated on every admin page — pages no longer each carry their own loading/denied states, and their data-fetching effects don't even mount until access is confirmed.
+- **`/admin/claim` moved to `/admin-claim`** — it has to stay reachable by non-admins (that's its entire purpose), so it can't live inside a layout that gates on admin access.
+
+### Admin now has real control over everything on the site, not just owners/properties
+
+- **`/admin/tenants`** (new) — every tenant across every owner's properties, with current rent status.
+- **`/admin/inquiries`** (new) — every inquiry submitted platform-wide, not just what an individual owner sees on their own dashboard.
+- **Edit button added to `/admin/properties`** — links straight to the owner's own edit form (`/dashboard/edit/[id]`), which already works for admins on *any* property thanks to the `is_admin` RLS policies added in round 6 — this just makes that capability reachable from the UI instead of only existing at the database level.
+- Owners (promote/demote admin) and Properties (unlist/relist/delete) — unchanged functionality, just restyled onto the new shell.
