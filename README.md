@@ -227,3 +227,15 @@ If you turn "Confirm email" on, set the **Redirect URLs** allowlist in Supabase 
 ### UI polish
 
 - Added two elevation tokens (`shadow-soft`, `shadow-raised`) and applied them to property cards (lift + shadow on hover, replacing a flat border-color change) and the hero's CTA buttons (soft shadow at rest, raised + lifted on hover).
+
+## Round 10 — mansion-style houses with per-house hover turn
+
+Two real changes to `components/TiltHouses.tsx`, on top of the existing cursor-parallax scene:
+
+**Honest scope note:** actual photographic mansions aren't something this build can include — that would mean either copyrighted stock photography (can't legally embed that) or an AI image-generation step outside what I have available here. What's built instead is more detailed, ornate vector illustrations (columns, pediments, a domed cupola, arched entrances, symmetric multi-window facades — three distinct "mansion-grade" facades, up from three plain gable-house silhouettes) that scale cleanly at any size and stay perfectly on-brand with the rest of the site's line-art system, including the header logo and verification seal.
+
+**Per-house hover turn:** each mansion now responds individually when you hover it — it turns in 3D (`rotateY`/`rotateX`), scales up, lifts toward the viewer, and comes to full opacity, independent of the whole-scene cursor-parallax tilt that was already there. Alternating houses turn in opposite directions (`turnDir: 1 | -1` per house) so the row doesn't feel mechanical. This required making the house layer accept pointer events (previously the whole scene was `pointer-events-none` so it wouldn't interfere with the hero content) — only the individual house shapes are interactive; the empty space between them still passes clicks through to whatever's beneath.
+
+**Z-index correctness:** a hovered house's z-index is deliberately capped below the hero content layer, so a mansion turning under your cursor can never visually cover or intercept clicks meant for the headline or CTA buttons, even if their positions overlap on a given viewport size.
+
+**Reduced-motion:** the hover-turn still triggers (it's a direct response to a deliberate hover, not ambient background motion — different from the auto-playing float/parallax, which is fully suppressed), but for `prefers-reduced-motion` users it's a plain scale-up with no rotation, so there's still a moment of natural interactivity without the 3D spin.
