@@ -14,7 +14,7 @@ type TenantRow = {
 };
 
 const statusColor: Record<string, string> = {
-  paid: "text-green-700 bg-green-100",
+  paid: "text-ink bg-teal/15",
   pending: "text-gold bg-gold/10",
   overdue: "text-rust bg-rust/10",
   failed: "text-rust bg-rust/10",
@@ -58,7 +58,7 @@ export default function AdminTenantsPage() {
       ) : tenants.length === 0 ? (
         <p className="text-sm text-slate">No tenants on the platform yet.</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10 shadow-soft">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10 shadow-soft">
           {tenants.map((t) => {
             const status = latestStatus(t);
             return (
@@ -70,7 +70,7 @@ export default function AdminTenantsPage() {
                   </p>
                   <p className="text-xs text-slate font-mono">GHS {Number(t.rent_amount).toLocaleString()}/mo</p>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded-sm capitalize shrink-0 ${statusColor[status]}`}>
+                <span className={`text-xs font-medium px-2 py-1 rounded-xl capitalize shrink-0 ${statusColor[status]}`}>
                   {status}
                 </span>
               </div>

@@ -260,3 +260,85 @@ Previously `/admin` reused the same light paper/rust theme as the rest of the si
 - **`/admin/inquiries`** (new) — every inquiry submitted platform-wide, not just what an individual owner sees on their own dashboard.
 - **Edit button added to `/admin/properties`** — links straight to the owner's own edit form (`/dashboard/edit/[id]`), which already works for admins on *any* property thanks to the `is_admin` RLS policies added in round 6 — this just makes that capability reachable from the UI instead of only existing at the database level.
 - Owners (promote/demote admin) and Properties (unlist/relist/delete) — unchanged functionality, just restyled onto the new shell.
+
+## Round 12 — deployment prep
+
+Two real fixes before this was actually safe/correct to deploy:
+
+- **Added `.gitignore`** — didn't exist before. Without it, a `git add .` would have staged `node_modules`, the `.next` build output, and — worst case — a `.env.local` if you ever created one at the project root. Now excluded properly.
+- **Fixed `next.config.js`'s image domain allowlist.** It hardcoded `**.r2.dev`, which would have silently broken every property photo the moment you connect a custom domain for R2 (e.g. `media.yourapp.com`, which the README already recommends). It now derives the allowed hostname directly from your `R2_PUBLIC_URL` env var, so it's correct whichever one you're actually using.
+
+### Deploying
+
+1. Push to GitHub (the new `.gitignore` keeps secrets and build artifacts out).
+2. Import the repo into Vercel — it auto-detects Next.js, no config needed.
+3. **Before the first deploy**, add every variable from your working `.env.local` to Vercel's Settings → Environment Variables. Set `APP_BASE_URL` to your real Vercel URL — this matters specifically for Hubtel's callback, which can't reach `localhost` and was untestable until now.
+4. Deploy.
+5. If Supabase email confirmation is on, add `<your-vercel-url>/auth/callback` to Supabase's Redirect URLs allowlist (Authentication → URL Configuration) — the deployed URL wasn't in that list before.
+6. Walk the entire flow for real: signup → phone verification → create a listing with photos → add a tenant → send a real Hubtel payment request → check `/admin`. This is the first point where Supabase, R2, Arkesel, and Hubtel are all running together against real infrastructure instead of individually-reasoned-about code.
+
+## Round 13 — notifications, automation, and launch-readiness pages
+
+### Owner/tenant notifications (SMS via Arkesel)
+
+Previously, everything sat silently in the dashboard until someone happened to check. Added `lib/arkeselSms.ts` — Arkesel's *general* SMS API (`/api/v2/sms/send`), distinct from the OTP-specific endpoints already in `lib/arkesel.ts` — and wired it into two events:
+- **New inquiry** (`app/api/inquiries/route.ts`) — owner gets a text with the renter's name and phone the moment someone contacts them about a listing.
+- **Rent payment resolves** (`app/api/payments/callback/route.ts`) — owner gets a text whether the mobile money payment succeeded or failed.
+
+Both are best-effort and fire-and-forget: a failed notification SMS is logged but never blocks or fails the actual request that triggered it (an inquiry still gets saved even if the owner's text fails to send).
+
+### Recurring rent + overdue reminders (`/api/cron/rent-tasks`)
+
+A daily cron job (`vercel.json`, 08:00 UTC) that:
+1. Marks any `pending` payment past its due date as `overdue`, and texts the tenant a reminder.
+2. For every tenant, auto-generates their next due payment a few days ahead of `rent_due_day` — no more adding each month's payment by hand.
+
+Protected by `CRON_SECRET` — Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` on its own cron triggers when that env var is set, so nobody else can hit the endpoint. You can also trigger it manually to test:
+```
+curl -H "Authorization: Bearer $CRON_SECRET" https://<your-app>/api/cron/rent-tasks
+```
+**Note:** Vercel's Hobby (free) plan limits cron jobs to once per day — the current schedule already respects that. If you're on a paid plan and want faster reminder turnaround, you can increase the frequency in `vercel.json`.
+
+### Terms of Service & Privacy Policy (`/terms`, `/privacy`)
+
+**These are starting templates, not finished legal documents** — both pages say so directly, in-page. They describe what this codebase actually does (which third parties get data, what's collected) but the liability, termination, and data-retention sections are explicitly left as `[add ...]` placeholders. Ghana's Data Protection Act, 2012 (Act 843) likely requires registering as a data controller — flagged in both pages, not something I can determine or complete on your behalf. Get a lawyer's review before real signups. Linked from the footer and referenced on the signup page.
+
+### SEO: sitemap + robots.txt
+
+`app/sitemap.ts` and `app/robots.ts` use Next.js's built-in special-file support — the sitemap includes every available listing dynamically (regenerated on each request), robots.txt blocks `/dashboard`, `/admin`, `/admin-claim`, and `/api` from being crawled. Both read `APP_BASE_URL`, so make sure that's set correctly in production.
+
+### Basic analytics + error handling
+
+- **Vercel Analytics** (`@vercel/analytics`) — added to `package.json` and the root layout. Free, zero-config pageview analytics once deployed on Vercel.
+- **`app/error.tsx`** — a real Next.js error boundary so a crash shows a recoverable "something went wrong" screen instead of a blank page. It logs to the console, which is genuinely useful in Vercel's function logs but isn't the same as being paged when something breaks.
+
+### Deliberately not built this round
+
+- **Real error monitoring (Sentry or similar).** I could have added a `sentry.client.config.ts` with a placeholder DSN, but that would look finished without being finished — it needs your own Sentry account and a real DSN to do anything. Worth adding once you're getting real traffic; the error boundary above is a stopgap, not a substitute.
+- **Two-factor authentication.** Explicitly deferred rather than half-built: phone verification already exists as a meaningful second factor at signup, real TOTP-based 2FA is a genuinely large UX surface (backup codes, recovery flows, per-session prompts), and there's no signal yet that account takeover is a real risk for this user base. Worth revisiting if the platform starts handling larger sums of money through Hubtel.
+
+## Round 14 — full rebrand: colors, typography, shape language
+
+A genuine rebrand, not a palette tweak — every hardcoded color reference across the codebase was found and updated (config tokens, inline SVG hex values, focus/selection colors), not just the design tokens.
+
+### New direction
+
+Moved from a "colonial ledger / stamped document" mood (navy ink, muted sandstone, brick rust, antique gold, slab serif) to Accra's coastal energy — brighter, bolder, warmer:
+
+- **Colors** (same token names in `tailwind.config.ts` — `ink`/`paper`/`rust`/`gold`/`slate` — so every existing class name in the app stayed valid, only the hex values changed):
+  - `ink`: deep coastal teal `#0C3B36` (was navy `#17233D`)
+  - `paper`: bright warm white `#FFFBF3` (was muted sandstone `#EFE7D8`)
+  - `rust`: vibrant coral `#FF5A36` (was muted brick `#9C3F24`)
+  - `gold`: sunny amber `#FFB627` (was antique gold `#B4880B`)
+  - **New token**: `teal` — a bright mint-teal accent (`#2FB8A6`) that didn't exist before, now used for "verified"/"paid" status pills, replacing a default Tailwind green that was never actually part of the branded palette even before this round
+- **Typography**: Space Grotesk (bold, geometric display face) replaces Zilla Slab; Plus Jakarta Sans replaces Inter for body text; Space Mono replaces IBM Plex Mono. Headings also moved from `font-semibold` at loose tracking to tighter, heavier tracking (`-0.02em` to `-0.03em`) to match Space Grotesk's more assertive geometry.
+- **Shape language**: every sharp `rounded-sm` corner (2px, the old "ledger" feel) is now `rounded-xl` (16px) — cards, inputs, badges. The highest-visibility CTAs (hero buttons, every auth page's primary submit button, header login/dashboard buttons) went further, to fully rounded pills (`rounded-full`).
+- **Shadows**: `shadow-soft`/`shadow-raised` are now tinted with the new teal ink and a hint of coral instead of flat black — a small detail, but it reads as a genuinely different, more contemporary elevation system rather than a generic neutral shadow.
+- **Verification badge redesign** (`components/VerifiedSeal.tsx`): the old rotated rubber-stamp motif (dashed circle, curved "VERIFIED OWNER" text) is gone, replaced with a bold flat solid-coral disc with a white checkmark and amber ring — reads as a modern trust badge rather than an official document stamp, matching the new energetic direction.
+- **Mansion illustrations** (`components/TiltHouses.tsx`) and the header's roofline logo mark were re-colored to the new palette — same shapes/interaction from prior rounds, new hues.
+
+### What deliberately didn't change
+
+Layout structure, component behavior, the mansion hover-turn interaction, and the admin dashboard's dark-shell-vs-light-content pattern are all untouched — this was a color/type/shape system change, not a UX rework. The admin section's dark chrome automatically inherited the new teal (it was already using the `ink` token), so it stayed visually distinct from the owner-facing site without needing separate updates.
+
+**Standing caveat, worth repeating for this round specifically**: font swaps and Tailwind config changes are exactly the kind of thing that can look correct in code review and still have a spacing/wrapping surprise in a real browser — worth a visual pass across at least the homepage, one auth page, and the admin dashboard once you're running this for real.

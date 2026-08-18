@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function SiteFooter() {
@@ -17,9 +18,14 @@ export default function SiteFooter() {
             Built for owners. Trusted by renters.
           </p>
         </div>
-        <p className="text-xs text-paper/50">
-          A platform for verified property owners in Accra, Ghana.
-        </p>
+        <div className="flex items-center gap-4">
+          <Link href="/terms" className="text-xs text-paper/50 hover:text-paper transition-colors">
+            Terms
+          </Link>
+          <Link href="/privacy" className="text-xs text-paper/50 hover:text-paper transition-colors">
+            Privacy
+          </Link>
+        </div>
       </div>
     </footer>
   );

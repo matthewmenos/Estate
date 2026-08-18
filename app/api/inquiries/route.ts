@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
+import { sendNotificationSms } from "@/lib/arkeselSms";
 
 export async function POST(req: NextRequest) {
   const { propertyId, renterName, renterPhone, message } = await req.json();
@@ -25,6 +26,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "Failed to submit inquiry" },
       { status: 500 }
+    );
+  }
+
+  // Notify the owner right away — previously this just sat silently in
+  // their dashboard until they happened to check. Best-effort: a failed
+  // notification should never fail the inquiry submission itself.
+  const { data: property } = await supabase
+    .from("properties")
+    .select("title, profiles(phone)")
+    .eq("id", propertyId)
+    .single();
+
+  const ownerPhone = (property as any)?.profiles?.phone;
+  if (ownerPhone) {
+    await sendNotificationSms(
+      ownerPhone,
+      `New inquiry on "${property!.title}" from ${renterName} (${renterPhone}). Check your Accra Rentals dashboard.`
     );
   }
 

@@ -15,9 +15,9 @@ type HouseSpec = {
   turnDir: 1 | -1; // which way this mansion turns on hover, for visual variety
 };
 
-const INK = "#17233D";
-const RUST = "#9C3F24";
-const GOLD = "#B4880B";
+const INK = "#0C3B36";
+const RUST = "#FF5A36";
+const GOLD = "#FFB627";
 
 // Spread across the full hero width, back-to-front so nearer mansions move
 // more under parallax — a real depth cue, not just decoration.

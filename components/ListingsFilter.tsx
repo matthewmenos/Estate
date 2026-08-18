@@ -39,7 +39,7 @@ export default function ListingsFilter({ listings }: { listings: Listing[] }) {
           <select
             value={listingType}
             onChange={(e) => setListingType(e.target.value as any)}
-            className="rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           >
             <option value="all">All</option>
             <option value="rent">For rent</option>
@@ -51,7 +51,7 @@ export default function ListingsFilter({ listings }: { listings: Listing[] }) {
           <select
             value={minBeds}
             onChange={(e) => setMinBeds(e.target.value)}
-            className="rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           >
             <option value="any">Any</option>
             <option value="1">1+</option>
@@ -68,7 +68,7 @@ export default function ListingsFilter({ listings }: { listings: Listing[] }) {
             placeholder="No limit"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
-            className="rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm w-36"
+            className="rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm w-36"
           />
         </div>
         {filtered.length !== listings.length && (
@@ -79,7 +79,7 @@ export default function ListingsFilter({ listings }: { listings: Listing[] }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="border border-dashed border-ink/20 rounded-sm p-12 text-center">
+        <div className="border border-dashed border-ink/20 rounded-xl p-12 text-center">
           <p className="text-slate">No listings match those filters.</p>
         </div>
       ) : (

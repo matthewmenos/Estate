@@ -18,7 +18,7 @@ export default function PropertyCard({ property }: { property: CardProperty }) {
   return (
     <Link
       href={`/properties/${property.id}`}
-      className="group block bg-paper-raised border border-ink/10 rounded-sm overflow-hidden shadow-soft hover:shadow-raised hover:-translate-y-1 hover:border-rust/30 transition-all duration-300"
+      className="group block bg-paper-raised border border-ink/10 rounded-xl overflow-hidden shadow-soft hover:shadow-raised hover:-translate-y-1 hover:border-rust/30 transition-all duration-300"
     >
       <div className="relative h-44 bg-ink/5">
         {property.coverUrl && (
@@ -34,7 +34,7 @@ export default function PropertyCard({ property }: { property: CardProperty }) {
             <VerifiedSeal size={48} />
           </div>
         )}
-        <span className="absolute bottom-2 left-2 bg-ink text-paper-raised text-[11px] font-medium tracking-wide uppercase px-2 py-0.5 rounded-sm">
+        <span className="absolute bottom-2 left-2 bg-ink text-paper-raised text-[11px] font-medium tracking-wide uppercase px-2 py-0.5 rounded-xl">
           {property.listing_type === "rent" ? "For rent" : "For sale"}
         </span>
       </div>

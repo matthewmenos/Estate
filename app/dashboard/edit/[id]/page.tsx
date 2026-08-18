@@ -144,7 +144,7 @@ export default function EditListingPage() {
             required
             value={form.title}
             onChange={(e) => updateField("title", e.target.value)}
-            className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
           />
         </div>
 
@@ -154,7 +154,7 @@ export default function EditListingPage() {
             value={form.description}
             onChange={(e) => updateField("description", e.target.value)}
             rows={4}
-            className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
           />
         </div>
 
@@ -164,7 +164,7 @@ export default function EditListingPage() {
             required
             value={form.address}
             onChange={(e) => updateField("address", e.target.value)}
-            className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
           />
         </div>
 
@@ -174,7 +174,7 @@ export default function EditListingPage() {
             <select
               value={form.property_type}
               onChange={(e) => updateField("property_type", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
             >
               <option value="house">House</option>
               <option value="apartment">Apartment</option>
@@ -187,7 +187,7 @@ export default function EditListingPage() {
             <select
               value={form.listing_type}
               onChange={(e) => updateField("listing_type", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
             >
               <option value="rent">For rent</option>
               <option value="sale">For sale</option>
@@ -204,7 +204,7 @@ export default function EditListingPage() {
               min="0"
               value={form.price}
               onChange={(e) => updateField("price", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
           <div>
@@ -212,7 +212,7 @@ export default function EditListingPage() {
             <select
               value={form.status}
               onChange={(e) => updateField("status", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
             >
               <option value="available">Available</option>
               <option value="occupied">Occupied</option>
@@ -230,7 +230,7 @@ export default function EditListingPage() {
               min="0"
               value={form.bedrooms}
               onChange={(e) => updateField("bedrooms", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
           <div>
@@ -240,7 +240,7 @@ export default function EditListingPage() {
               min="0"
               value={form.bathrooms}
               onChange={(e) => updateField("bathrooms", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
             />
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function EditListingPage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex-1 rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
+            className="flex-1 rounded-xl bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save changes"}
           </button>
@@ -259,7 +259,7 @@ export default function EditListingPage() {
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="rounded-sm border border-red-300 text-red-600 px-4 py-2 text-sm font-medium disabled:opacity-50"
+            className="rounded-xl border border-red-300 text-red-600 px-4 py-2 text-sm font-medium disabled:opacity-50"
           >
             {deleting ? "Deleting…" : "Delete"}
           </button>

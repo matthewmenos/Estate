@@ -50,7 +50,7 @@ function ResetPasswordForm() {
         </p>
         <button
           onClick={() => router.push("/login")}
-          className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium"
+          className="w-full rounded-full bg-rust text-paper-raised py-2.5 text-sm font-medium"
         >
           Go to login
         </button>
@@ -74,7 +74,7 @@ function ResetPasswordForm() {
             placeholder="123456"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm tracking-widest"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm tracking-widest"
           />
         </div>
         <div>
@@ -85,7 +85,7 @@ function ResetPasswordForm() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -96,14 +96,14 @@ function ResetPasswordForm() {
             minLength={6}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           />
         </div>
         {error && <p className="text-sm text-rust">{error}</p>}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
+          className="w-full rounded-full bg-rust text-paper-raised py-2.5 text-sm font-medium disabled:opacity-50"
         >
           {loading ? "Resetting…" : "Reset password"}
         </button>

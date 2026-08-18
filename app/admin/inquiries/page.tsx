@@ -43,7 +43,7 @@ export default function AdminInquiriesPage() {
       ) : inquiries.length === 0 ? (
         <p className="text-sm text-slate">No inquiries yet.</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10 shadow-soft">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10 shadow-soft">
           {inquiries.map((inq) => (
             <div key={inq.id} className="px-4 py-3">
               <div className="flex items-center justify-between">

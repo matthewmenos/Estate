@@ -49,13 +49,13 @@ export default async function HomePage() {
           <div className="mt-9 flex flex-wrap gap-3">
             <Link
               href="/login"
-              className="rounded-sm bg-rust text-paper-raised px-5 py-3 text-sm font-medium shadow-soft hover:bg-rust-dark hover:shadow-raised hover:-translate-y-0.5 transition-all"
+              className="rounded-full bg-rust text-paper-raised px-5 py-3 text-sm font-medium shadow-soft hover:bg-rust-dark hover:shadow-raised hover:-translate-y-0.5 transition-all"
             >
               List your property
             </Link>
             <a
               href="#listings"
-              className="rounded-sm border border-ink text-ink px-5 py-3 text-sm font-medium hover:bg-ink hover:text-paper-raised hover:-translate-y-0.5 transition-all"
+              className="rounded-full border border-ink text-ink px-5 py-3 text-sm font-medium hover:bg-ink hover:text-paper-raised hover:-translate-y-0.5 transition-all"
             >
               Browse listings
             </a>
@@ -102,7 +102,7 @@ export default async function HomePage() {
         </h2>
 
         {listings.length === 0 ? (
-          <div className="border border-dashed border-ink/20 rounded-sm p-12 text-center">
+          <div className="border border-dashed border-ink/20 rounded-xl p-12 text-center">
             <p className="text-slate">
               No listings yet — be the first to list a property in Accra.
             </p>

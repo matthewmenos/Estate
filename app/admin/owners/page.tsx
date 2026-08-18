@@ -15,7 +15,7 @@ type Owner = {
 };
 
 const statusColor: Record<string, string> = {
-  verified: "text-green-700 bg-green-100",
+  verified: "text-ink bg-teal/15",
   pending: "text-gold bg-gold/10",
   unverified: "text-slate bg-ink/5",
   rejected: "text-rust bg-rust/10",
@@ -57,7 +57,7 @@ export default function AdminOwnersPage() {
       {loading ? (
         <p className="text-sm text-slate">Loading…</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10 shadow-soft">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10 shadow-soft">
           {owners.map((o) => (
             <div key={o.id} className="flex items-center justify-between px-4 py-3 gap-3">
               <div className="min-w-0">
@@ -66,13 +66,13 @@ export default function AdminOwnersPage() {
                 <p className="text-xs text-slate">{o.properties?.length ?? 0} listing(s)</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className={`text-xs font-medium px-2 py-1 rounded-sm capitalize ${statusColor[o.verification_status]}`}>
+                <span className={`text-xs font-medium px-2 py-1 rounded-xl capitalize ${statusColor[o.verification_status]}`}>
                   {o.verification_status}
                 </span>
                 <button
                   onClick={() => toggleAdmin(o)}
                   disabled={busyId === o.id}
-                  className={`text-xs rounded-sm px-2 py-1.5 font-medium border disabled:opacity-50 ${
+                  className={`text-xs rounded-xl px-2 py-1.5 font-medium border disabled:opacity-50 ${
                     o.is_admin ? "border-ink text-ink" : "border-ink/20 text-slate"
                   }`}
                 >

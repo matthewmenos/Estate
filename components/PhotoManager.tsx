@@ -88,7 +88,7 @@ export default function PhotoManager({ propertyId }: { propertyId: string }) {
   if (loading) return <p className="text-sm text-slate">Loading photos…</p>;
 
   return (
-    <div className="border border-ink/10 bg-paper-raised rounded-sm p-4">
+    <div className="border border-ink/10 bg-paper-raised rounded-xl p-4">
       <h2 className="font-display font-semibold text-ink mb-3">Photos</h2>
 
       {photos.length === 0 ? (
@@ -101,9 +101,9 @@ export default function PhotoManager({ propertyId }: { propertyId: string }) {
               <img
                 src={p.thumb_url || p.url}
                 alt={`Photo ${i + 1}`}
-                className="h-20 w-full object-cover rounded-sm"
+                className="h-20 w-full object-cover rounded-xl"
               />
-              <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/40 transition-colors rounded-sm flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/40 transition-colors rounded-xl flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
                 <button
                   type="button"
                   onClick={() => move(i, -1)}
@@ -132,7 +132,7 @@ export default function PhotoManager({ propertyId }: { propertyId: string }) {
                 </button>
               </div>
               {i === 0 && (
-                <span className="absolute bottom-1 left-1 bg-gold text-ink text-[10px] px-1.5 py-0.5 rounded-sm font-medium">
+                <span className="absolute bottom-1 left-1 bg-gold text-ink text-[10px] px-1.5 py-0.5 rounded-xl font-medium">
                   Cover
                 </span>
               )}

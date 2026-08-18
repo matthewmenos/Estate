@@ -57,7 +57,7 @@ export default function InquiriesPage() {
           No inquiries yet. They'll show up here as soon as someone contacts you about a listing.
         </p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10">
           {inquiries.map((inq) => (
             <div key={inq.id} className="px-4 py-3">
               <div className="flex items-center justify-between">

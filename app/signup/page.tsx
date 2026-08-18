@@ -92,7 +92,7 @@ export default function SignupPage() {
             required
             value={form.name}
             onChange={(e) => updateField("name", e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -102,7 +102,7 @@ export default function SignupPage() {
             required
             value={form.email}
             onChange={(e) => updateField("email", e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -113,7 +113,7 @@ export default function SignupPage() {
             minLength={6}
             value={form.password}
             onChange={(e) => updateField("password", e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           />
         </div>
         <div>
@@ -124,15 +124,20 @@ export default function SignupPage() {
             placeholder="024 123 4567"
             value={form.phone}
             onChange={(e) => updateField("phone", e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           />
           <p className="text-xs text-slate mt-1">We'll text a code to confirm this number.</p>
         </div>
         {error && <p className="text-sm text-rust">{error}</p>}
+        <p className="text-xs text-slate text-center">
+          By signing up, you agree to our{" "}
+          <Link href="/terms" className="text-rust hover:underline">Terms</Link> and{" "}
+          <Link href="/privacy" className="text-rust hover:underline">Privacy Policy</Link>.
+        </p>
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
+          className="w-full rounded-full bg-rust text-paper-raised py-2.5 text-sm font-medium disabled:opacity-50"
         >
           {loading ? "Creating account…" : "Sign up"}
         </button>

@@ -17,7 +17,7 @@ type Property = {
 };
 
 const statusColor: Record<string, string> = {
-  available: "text-green-700 bg-green-100",
+  available: "text-ink bg-teal/15",
   occupied: "text-gold bg-gold/10",
   sold: "text-slate bg-ink/5",
   unlisted: "text-rust bg-rust/10",
@@ -70,7 +70,7 @@ export default function AdminPropertiesPage() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as any)}
-          className="rounded-sm border border-ink/20 bg-paper-raised px-3 py-1.5 text-sm"
+          className="rounded-xl border border-ink/20 bg-paper-raised px-3 py-1.5 text-sm"
         >
           <option value="all">All statuses</option>
           <option value="available">Available</option>
@@ -86,7 +86,7 @@ export default function AdminPropertiesPage() {
       ) : filtered.length === 0 ? (
         <p className="text-sm text-slate">No properties match that filter.</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10 shadow-soft">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10 shadow-soft">
           {filtered.map((p) => (
             <div key={p.id} className="flex items-center justify-between px-4 py-3 gap-3 flex-wrap">
               <div className="min-w-0">
@@ -99,12 +99,12 @@ export default function AdminPropertiesPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <span className={`text-xs font-medium px-2 py-1 rounded-sm capitalize ${statusColor[p.status]}`}>
+                <span className={`text-xs font-medium px-2 py-1 rounded-xl capitalize ${statusColor[p.status]}`}>
                   {p.status}
                 </span>
                 <Link
                   href={`/dashboard/edit/${p.id}`}
-                  className="text-xs rounded-sm border border-ink/30 text-ink px-2 py-1.5 font-medium"
+                  className="text-xs rounded-xl border border-ink/30 text-ink px-2 py-1.5 font-medium"
                 >
                   Edit
                 </Link>
@@ -112,7 +112,7 @@ export default function AdminPropertiesPage() {
                   <button
                     onClick={() => setPropertyStatus(p.id, "unlisted")}
                     disabled={busyId === p.id}
-                    className="text-xs rounded-sm border border-ink/30 text-ink px-2 py-1.5 font-medium disabled:opacity-50"
+                    className="text-xs rounded-xl border border-ink/30 text-ink px-2 py-1.5 font-medium disabled:opacity-50"
                   >
                     Unlist
                   </button>
@@ -120,7 +120,7 @@ export default function AdminPropertiesPage() {
                   <button
                     onClick={() => setPropertyStatus(p.id, "available")}
                     disabled={busyId === p.id}
-                    className="text-xs rounded-sm border border-ink/30 text-ink px-2 py-1.5 font-medium disabled:opacity-50"
+                    className="text-xs rounded-xl border border-ink/30 text-ink px-2 py-1.5 font-medium disabled:opacity-50"
                   >
                     Relist
                   </button>
@@ -128,7 +128,7 @@ export default function AdminPropertiesPage() {
                 <button
                   onClick={() => removeProperty(p.id)}
                   disabled={busyId === p.id}
-                  className="text-xs rounded-sm bg-rust text-paper-raised px-2 py-1.5 font-medium disabled:opacity-50"
+                  className="text-xs rounded-xl bg-rust text-paper-raised px-2 py-1.5 font-medium disabled:opacity-50"
                 >
                   Delete
                 </button>

@@ -49,7 +49,7 @@ export default function TenantsPage() {
   }
 
   const statusColor: Record<string, string> = {
-    paid: "text-green-700 bg-green-100",
+    paid: "text-ink bg-teal/15",
     pending: "text-gold bg-gold/10",
     overdue: "text-rust bg-rust/10",
     failed: "text-rust bg-rust/10",
@@ -62,7 +62,7 @@ export default function TenantsPage() {
         <h1 className="text-2xl font-semibold text-ink">Tenants & rent</h1>
         <Link
           href="/dashboard/tenants/new"
-          className="rounded-sm bg-rust text-paper-raised px-4 py-2 text-sm font-medium"
+          className="rounded-xl bg-rust text-paper-raised px-4 py-2 text-sm font-medium"
         >
           + Add tenant
         </Link>
@@ -75,7 +75,7 @@ export default function TenantsPage() {
           No tenants yet. Add one to start tracking rent for an occupied property.
         </p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10">
           {tenants.map((t) => {
             const status = latestStatus(t);
             return (
@@ -92,7 +92,7 @@ export default function TenantsPage() {
                   </p>
                 </div>
                 <span
-                  className={`text-xs font-medium px-2 py-1 rounded-sm capitalize ${statusColor[status]}`}
+                  className={`text-xs font-medium px-2 py-1 rounded-xl capitalize ${statusColor[status]}`}
                 >
                   {status}
                 </span>

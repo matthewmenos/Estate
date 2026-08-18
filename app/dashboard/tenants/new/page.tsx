@@ -94,7 +94,7 @@ export default function NewTenantPage() {
             <select
               value={form.property_id}
               onChange={(e) => updateField("property_id", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
             >
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -110,7 +110,7 @@ export default function NewTenantPage() {
               required
               value={form.name}
               onChange={(e) => updateField("name", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
             />
           </div>
 
@@ -122,7 +122,7 @@ export default function NewTenantPage() {
               placeholder="024 123 4567"
               value={form.phone}
               onChange={(e) => updateField("phone", e.target.value)}
-              className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+              className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
             />
             <p className="text-xs text-slate mt-1">
               Used for mobile money rent requests — make sure it's their MoMo number.
@@ -136,7 +136,7 @@ export default function NewTenantPage() {
                 type="date"
                 value={form.lease_start}
                 onChange={(e) => updateField("lease_start", e.target.value)}
-                className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
               />
             </div>
             <div>
@@ -145,7 +145,7 @@ export default function NewTenantPage() {
                 type="date"
                 value={form.lease_end}
                 onChange={(e) => updateField("lease_end", e.target.value)}
-                className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -159,7 +159,7 @@ export default function NewTenantPage() {
                 min="0"
                 value={form.rent_amount}
                 onChange={(e) => updateField("rent_amount", e.target.value)}
-                className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
               />
             </div>
             <div>
@@ -171,7 +171,7 @@ export default function NewTenantPage() {
                 max="28"
                 value={form.rent_due_day}
                 onChange={(e) => updateField("rent_due_day", e.target.value)}
-                className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+                className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
               />
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function NewTenantPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
+            className="w-full rounded-full bg-rust text-paper-raised py-2.5 text-sm font-medium disabled:opacity-50"
           >
             {submitting ? "Saving…" : "Add tenant"}
           </button>

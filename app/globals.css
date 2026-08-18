@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 ::selection {
-  background: #9c3f24;
-  color: #efe7d8;
+  background: #ff5a36;
+  color: #fffbf3;
 }
 
 :focus-visible {
-  outline: 2px solid #9c3f24;
+  outline: 2px solid #ff5a36;
   outline-offset: 2px;
 }
 
 h1, h2, h3 {
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 /* Belt-and-suspenders: TiltHouses already skips its JS-driven tilt/parallax

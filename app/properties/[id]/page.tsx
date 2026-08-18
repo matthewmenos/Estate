@@ -53,7 +53,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
       <ViewCounter propertyId={property.id} />
       <div className="relative">
         {photos.length > 0 ? (
-          <div className="grid grid-cols-2 gap-2 mb-8 rounded-sm overflow-hidden">
+          <div className="grid grid-cols-2 gap-2 mb-8 rounded-xl overflow-hidden">
             <div className="relative h-72 col-span-2 sm:col-span-1">
               <Image src={photos[0].medium_url || photos[0].url} alt={property.title} fill className="object-cover" />
             </div>
@@ -66,7 +66,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
             </div>
           </div>
         ) : (
-          <div className="h-72 bg-ink/5 rounded-sm mb-8" />
+          <div className="h-72 bg-ink/5 rounded-xl mb-8" />
         )}
         {verified && (
           <div className="absolute top-3 right-3 drop-shadow">
@@ -106,7 +106,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
         </div>
 
         <div className="sm:col-span-1">
-          <div className="bg-paper-raised border border-ink/10 rounded-sm p-5 sticky top-4">
+          <div className="bg-paper-raised border border-ink/10 rounded-xl p-5 sticky top-4">
             <h2 className="font-display font-semibold text-ink mb-3">Interested?</h2>
             {ownerPhone && (
               <div className="mb-3">

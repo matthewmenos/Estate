@@ -47,19 +47,19 @@ export default function DashboardPage() {
         <div className="flex gap-2">
           <Link
             href="/dashboard/tenants"
-            className="rounded-sm border border-ink text-ink px-4 py-2 text-sm font-medium"
+            className="rounded-xl border border-ink text-ink px-4 py-2 text-sm font-medium"
           >
             Tenants
           </Link>
           <Link
             href="/dashboard/inquiries"
-            className="rounded-sm border border-ink text-ink px-4 py-2 text-sm font-medium"
+            className="rounded-xl border border-ink text-ink px-4 py-2 text-sm font-medium"
           >
             Inquiries
           </Link>
           <Link
             href="/dashboard/new"
-            className="rounded-sm bg-rust text-paper-raised px-4 py-2 text-sm font-medium"
+            className="rounded-xl bg-rust text-paper-raised px-4 py-2 text-sm font-medium"
           >
             + New listing
           </Link>
@@ -73,7 +73,7 @@ export default function DashboardPage() {
           You haven't listed a property yet. Click "New listing" to get started.
         </p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10">
           {properties.map((p) => (
             <Link
               key={p.id}

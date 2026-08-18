@@ -46,7 +46,7 @@ export default function AdminVerifyPage() {
       ) : owners.length === 0 ? (
         <p className="text-sm text-slate">Nothing pending.</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10 shadow-soft">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10 shadow-soft">
           {owners.map((o) => (
             <div key={o.id} className="flex items-center justify-between px-4 py-3">
               <div>
@@ -57,13 +57,13 @@ export default function AdminVerifyPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setStatus(o.id, "verified")}
-                  className="rounded-sm bg-gold text-ink px-3 py-1.5 text-sm font-medium"
+                  className="rounded-xl bg-gold text-ink px-3 py-1.5 text-sm font-medium"
                 >
                   Approve
                 </button>
                 <button
                   onClick={() => setStatus(o.id, "rejected")}
-                  className="rounded-sm border border-rust text-rust px-3 py-1.5 text-sm font-medium"
+                  className="rounded-xl border border-rust text-rust px-3 py-1.5 text-sm font-medium"
                 >
                   Reject
                 </button>

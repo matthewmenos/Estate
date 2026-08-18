@@ -76,7 +76,7 @@ function VerifyPhoneForm() {
             placeholder="123456"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm tracking-widest"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm tracking-widest"
           />
         </div>
         {error && <p className="text-sm text-rust">{error}</p>}
@@ -84,7 +84,7 @@ function VerifyPhoneForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium disabled:opacity-50"
+          className="w-full rounded-full bg-rust text-paper-raised py-2.5 text-sm font-medium disabled:opacity-50"
         >
           {loading ? "Verifying…" : "Verify"}
         </button>

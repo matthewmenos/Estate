@@ -28,7 +28,7 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
 
   if (status === "sent") {
     return (
-      <p className="text-sm text-ink bg-gold/10 border border-gold/30 rounded-sm p-3">
+      <p className="text-sm text-ink bg-gold/10 border border-gold/30 rounded-xl p-3">
         Sent. The owner will be in touch with you directly.
       </p>
     );
@@ -42,7 +42,7 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+          className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
         />
       </div>
       <div>
@@ -52,7 +52,7 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+          className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
         />
       </div>
       <div>
@@ -62,7 +62,7 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
           onChange={(e) => setMessage(e.target.value)}
           rows={3}
           placeholder="I'm interested in viewing this property…"
-          className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+          className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
         />
       </div>
       {status === "error" && (
@@ -71,7 +71,7 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
       <button
         type="submit"
         disabled={status === "sending"}
-        className="w-full rounded-sm bg-rust text-paper-raised py-2 text-sm font-medium hover:bg-rust-dark transition-colors disabled:opacity-50"
+        className="w-full rounded-xl bg-rust text-paper-raised py-2 text-sm font-medium hover:bg-rust-dark transition-colors disabled:opacity-50"
       >
         {status === "sending" ? "Sending…" : "Contact owner"}
       </button>

@@ -25,7 +25,7 @@ type Payment = {
 };
 
 const statusColor: Record<string, string> = {
-  paid: "text-green-700 bg-green-100",
+  paid: "text-ink bg-teal/15",
   pending: "text-gold bg-gold/10",
   overdue: "text-rust bg-rust/10",
   failed: "text-rust bg-rust/10",
@@ -133,15 +133,15 @@ export default function TenantDetailPage() {
       <p className="text-sm text-slate font-mono mb-6">{tenant.phone}</p>
 
       <div className="grid grid-cols-3 gap-4 mb-8 text-sm">
-        <div className="bg-paper-raised border border-ink/10 rounded-sm p-3">
+        <div className="bg-paper-raised border border-ink/10 rounded-xl p-3">
           <p className="text-slate text-xs">Monthly rent</p>
           <p className="font-mono font-semibold text-ink">GHS {Number(tenant.rent_amount).toLocaleString()}</p>
         </div>
-        <div className="bg-paper-raised border border-ink/10 rounded-sm p-3">
+        <div className="bg-paper-raised border border-ink/10 rounded-xl p-3">
           <p className="text-slate text-xs">Due day</p>
           <p className="font-mono font-semibold text-ink">{tenant.rent_due_day}</p>
         </div>
-        <div className="bg-paper-raised border border-ink/10 rounded-sm p-3">
+        <div className="bg-paper-raised border border-ink/10 rounded-xl p-3">
           <p className="text-slate text-xs">Lease</p>
           <p className="text-ink text-xs">
             {tenant.lease_start ?? "—"} → {tenant.lease_end ?? "—"}
@@ -157,12 +157,12 @@ export default function TenantDetailPage() {
             required
             value={newDueDate}
             onChange={(e) => setNewDueDate(e.target.value)}
-            className="w-full rounded-sm border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
+            className="w-full rounded-xl border border-ink/20 bg-paper-raised px-3 py-2 text-sm"
           />
         </div>
         <button
           type="submit"
-          className="rounded-sm border border-ink text-ink px-4 py-2 text-sm font-medium"
+          className="rounded-xl border border-ink text-ink px-4 py-2 text-sm font-medium"
         >
           Add
         </button>
@@ -174,7 +174,7 @@ export default function TenantDetailPage() {
       {payments.length === 0 ? (
         <p className="text-sm text-slate">No payments logged yet.</p>
       ) : (
-        <div className="divide-y divide-ink/10 bg-paper-raised rounded-sm border border-ink/10">
+        <div className="divide-y divide-ink/10 bg-paper-raised rounded-xl border border-ink/10">
           {payments.map((p) => (
             <div key={p.id} className="flex items-center justify-between px-4 py-3">
               <div>
@@ -188,7 +188,7 @@ export default function TenantDetailPage() {
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <span className={`text-xs font-medium px-2 py-1 rounded-sm capitalize ${statusColor[p.status]}`}>
+                <span className={`text-xs font-medium px-2 py-1 rounded-xl capitalize ${statusColor[p.status]}`}>
                   {p.status}
                 </span>
                 {p.status !== "paid" && (
@@ -196,14 +196,14 @@ export default function TenantDetailPage() {
                     <button
                       onClick={() => requestMobileMoney(p.id)}
                       disabled={busyId === p.id}
-                      className="text-xs rounded-sm bg-rust text-paper-raised px-2 py-1.5 font-medium disabled:opacity-50"
+                      className="text-xs rounded-xl bg-rust text-paper-raised px-2 py-1.5 font-medium disabled:opacity-50"
                     >
                       {busyId === p.id ? "Sending…" : "Request MoMo"}
                     </button>
                     <button
                       onClick={() => markPaidManually(p.id)}
                       disabled={busyId === p.id}
-                      className="text-xs rounded-sm border border-ink/30 text-ink px-2 py-1.5 font-medium disabled:opacity-50"
+                      className="text-xs rounded-xl border border-ink/30 text-ink px-2 py-1.5 font-medium disabled:opacity-50"
                     >
                       Mark paid
                     </button>

@@ -72,7 +72,7 @@ export default function AdminOverviewPage() {
           {cards.map((c) => {
             const inner = (
               <div
-                className={`border rounded-sm p-4 h-full shadow-soft ${
+                className={`border rounded-xl p-4 h-full shadow-soft ${
                   c.flag ? "border-rust/40 bg-rust/5" : "border-ink/10 bg-paper-raised"
                 }`}
               >

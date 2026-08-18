@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Zilla_Slab, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Space_Grotesk, Plus_Jakarta_Sans, Space_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import "./globals.css";
 
-const display = Zilla_Slab({
+const display = Space_Grotesk({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   variable: "--font-display",
 });
-const body = Inter({
+const body = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-body",
 });
-const mono = IBM_Plex_Mono({
+const mono = Space_Mono({
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["400", "700"],
   variable: "--font-mono",
 });
 
@@ -37,6 +38,7 @@ export default function RootLayout({
         <SiteHeader />
         <div className="flex-1">{children}</div>
         <SiteFooter />
+        <Analytics />
       </body>
     </html>
   );
