@@ -27,18 +27,22 @@ export default function LoginPage() {
 
     const { data: profile } = await supabaseBrowser
       .from("profiles")
-      .select("phone_verified")
+      .select("phone_verified, role")
       .eq("id", data.user.id)
       .single();
 
     setLoading(false);
-    router.push(profile?.phone_verified ? "/dashboard" : "/verify-phone");
+    if (!profile?.phone_verified) {
+      router.push("/verify-phone");
+    } else {
+      router.push(profile.role === "renter" ? "/renter" : "/dashboard");
+    }
   }
 
   return (
     <AuthPageShell>
-      <h1 className="text-2xl font-semibold text-ink mb-1">Owner login</h1>
-      <p className="text-slate text-sm mb-6">List and manage your properties on Accra Rentals.</p>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Log in</h1>
+      <p className="text-slate text-sm mb-6">Welcome back to Accra Rentals.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

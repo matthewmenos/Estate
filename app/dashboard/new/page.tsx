@@ -12,6 +12,7 @@ export default function NewListingPage() {
     title: "",
     description: "",
     address: "",
+    area: "",
     city: "Accra",
     property_type: "house",
     listing_type: "rent",
@@ -87,6 +88,7 @@ export default function NewListingPage() {
           title: form.title,
           description: form.description || null,
           address: form.address,
+          area: form.area || null,
           city: form.city,
           property_type: form.property_type,
           listing_type: form.listing_type,
@@ -100,6 +102,25 @@ export default function NewListingPage() {
         .single();
 
       if (insertError) throw insertError;
+
+      // Geocode the address so the listing can show a map — best-effort,
+      // never blocks the listing from being created if it fails or if the
+      // address doesn't geocode cleanly.
+      fetch("/api/geocode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: form.address, city: form.city }),
+      })
+        .then((r) => r.json())
+        .then(({ coords }) => {
+          if (coords) {
+            supabaseBrowser
+              .from("properties")
+              .update({ latitude: coords.lat, longitude: coords.lng })
+              .eq("id", property.id);
+          }
+        })
+        .catch(() => {});
 
       // 2. Upload photos (sequentially — simplest to reason about for an MVP)
       for (let i = 0; i < photos.length; i++) {
@@ -149,6 +170,17 @@ export default function NewListingPage() {
             placeholder="Street / area"
             className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Neighborhood</label>
+          <input
+            value={form.area}
+            onChange={(e) => updateField("area", e.target.value)}
+            placeholder="e.g. East Legon, Osu, Cantonments"
+            className="w-full rounded-xl border border-ink/20 px-3 py-2 text-sm"
+          />
+          <p className="text-xs text-slate mt-1">Helps renters browsing by neighborhood find your listing.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

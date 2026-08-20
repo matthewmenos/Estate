@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { supabaseServer } from "@/lib/supabase";
+import { slugifyArea } from "@/lib/areaSlug";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.APP_BASE_URL || "https://your-app.vercel.app";
@@ -15,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = supabaseServer();
   const { data: properties } = await supabase
     .from("properties")
-    .select("id, updated_at")
+    .select("id, area, updated_at")
     .eq("status", "available");
 
   const propertyPages: MetadataRoute.Sitemap = (properties ?? []).map((p) => ({
@@ -25,5 +26,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...propertyPages];
+  const uniqueAreas = Array.from(new Set((properties ?? []).map((p) => p.area).filter(Boolean)));
+  const areaPages: MetadataRoute.Sitemap = uniqueAreas.map((area) => ({
+    url: `${baseUrl}/areas/${slugifyArea(area as string)}`,
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
+  return [...staticPages, ...propertyPages, ...areaPages];
 }

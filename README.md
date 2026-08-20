@@ -342,3 +342,75 @@ Moved from a "colonial ledger / stamped document" mood (navy ink, muted sandston
 Layout structure, component behavior, the mansion hover-turn interaction, and the admin dashboard's dark-shell-vs-light-content pattern are all untouched — this was a color/type/shape system change, not a UX rework. The admin section's dark chrome automatically inherited the new teal (it was already using the `ink` token), so it stayed visually distinct from the owner-facing site without needing separate updates.
 
 **Standing caveat, worth repeating for this round specifically**: font swaps and Tailwind config changes are exactly the kind of thing that can look correct in code review and still have a spacing/wrapping surprise in a real browser — worth a visual pass across at least the homepage, one auth page, and the admin dashboard once you're running this for real.
+
+## Round 15 — favicon/OG image, 404 page, and real rate limiting
+
+### Favicon, app icon, default share image
+
+`app/icon.tsx` and `app/apple-icon.tsx` generate the browser tab icon and iOS home-screen icon dynamically from the brand's roofline mark (Next.js's built-in icon convention — no static image asset needed, regenerates automatically if you change the colors later). `app/opengraph-image.tsx` is the site-wide fallback share image for pages that don't set their own (property listings already have theirs from `generateMetadata` — a few rounds back).
+
+### Custom 404 (`app/not-found.tsx`)
+
+Replaces Next.js's bare default with something that actually matches the brand and points back to the homepage.
+
+### Real rate limiting — the fix that's been flagged twice and never done until now
+
+Previously, both `/api/admin/claim` and the password-reset endpoints either used an in-memory `Map` (resets on every deploy, doesn't work across Vercel's serverless instances — explicitly called out as a stopgap in round 7) or had **no rate limiting at all** (the password-reset endpoints, since round 5).
+
+Replaced with a real, durable mechanism:
+- **`supabase/migrations/0006_rate_limiting.sql`** — a `rate_limits` table plus an atomic `check_rate_limit()` Postgres function (row-locked via `ON CONFLICT`, so it's correct under concurrent requests, unlike the old in-memory counter).
+- **`lib/rateLimit.ts`** — a thin `checkRateLimit(key, maxAttempts, windowSeconds)` wrapper any route can call.
+- Applied to all three previously-unprotected/weakly-protected endpoints:
+  - `/api/admin/claim` — 5 attempts / 15 min, keyed by user ID
+  - `/api/password-reset/confirm` — 5 attempts / 15 min, keyed by the *target phone number* (this endpoint has no authenticated user to key on — that's the point of it)
+  - `/api/password-reset/request` — 3 attempts / 15 min, keyed by phone — new; this endpoint had zero protection before, meaning someone could have spammed Arkesel sends (and cost) against any phone number
+
+The password-reset endpoints deliberately keep returning the same generic response whether a request is rate-limited, the phone number doesn't exist, or the code was wrong — consistent with the no-enumeration design already in place, just now with an actual cap on abuse.
+
+**One follow-up worth doing, not done here:** `rate_limits` rows accumulate forever as written. Harmless at small scale, but worth adding a cleanup step to the existing daily cron job (`/api/cron/rent-tasks`) once this has real traffic — delete rows older than your longest window.
+
+### What's still genuinely not done — can't be faked from here
+
+- **Automated tests.** Zero test coverage remains zero. Setting up a real test suite needs your own environment to run and verify against — writing tests I can't execute would risk shipping tests that look right and aren't.
+- **A live visual QA pass.** Nothing has been looked at in an actual browser since the rebrand (or really, at all, across every round). This is the one item on every "what's missing" list that can't be resolved by writing more code — it needs you running the app.
+
+## Round 16 — all 8 requested features: renter accounts, map, gallery, alerts, areas, reviews, CSV export, auto-expiry
+
+### 1. Renter accounts
+Signup now has an owner/renter role toggle (`app/signup/page.tsx`), carried through both the immediate and email-confirmation-deferred (`/auth/callback`) paths. Login and phone verification route by role (`role === 'renter' ? '/renter' : '/dashboard'`). `/renter` (`app/renter/page.tsx`) is the renter's own dashboard: saved listings (with a price-change indicator — compares the live price to `saved_price` at time of saving), inquiry history, and saved search alerts. Inquiries submitted while logged in now link to the renter's account (`inquiries.renter_id`) so they show up there.
+
+### 2. Map on listings
+No API key required — `lib/geocode.ts` uses OpenStreetMap's free Nominatim API to geocode a listing's address on creation/edit (best-effort, never blocks saving), and `components/PropertyMap.tsx` renders it via OSM's free iframe embed. **Nominatim's usage policy requires a real contact email in the User-Agent header** — `lib/geocode.ts` has a placeholder (`set-your-email-here@example.com`) that needs to be your actual email before this goes live, or Nominatim may block requests.
+
+### 3. Full photo gallery + lightbox
+`components/PhotoGallery.tsx` — replaces the old fixed 3-photo grid. Shows all photos, click any to open a full-screen lightbox with prev/next arrows and keyboard navigation (arrow keys, Escape).
+
+### 4. Listing search alerts
+Renters set filters on the homepage and tap "🔔 Alert me for these filters" (`components/ListingsFilter.tsx`) to save a search (`search_alerts` table). The `/api/cron/listing-maintenance` daily cron matches newly-available listings against saved alerts and texts matching renters. A listing is only matched once (`properties.alert_sent`) — flipped back to `false` automatically when a listing is relisted after being unavailable, so relisted properties re-trigger alerts without every ordinary edit spamming renters.
+
+### 5. Neighborhood landing pages
+Owners can tag a listing with a neighborhood (`area` field, added to both the new-listing and edit forms). `/areas/[area]` (e.g. `/areas/east-legon`) is a real SEO landing page — its own metadata, filtered listings. The homepage shows a "Browse by neighborhood" chip row, and the sitemap includes every distinct area automatically.
+
+### 6. Reviews from past tenants
+Tenants don't have platform logins, so reviews go through a tokenized link instead: the owner taps "Request review" on a tenant's page, which texts them a private URL (`/review/[token]`) built around a UUID already generated per-tenant (`tenants.review_token`). The token itself is the credential — no login needed to submit. Reviews are public (shown with a star average on the property page) but can only be written server-side, and each tenancy can only be reviewed once (enforced by a unique constraint on `reviews.tenant_id`).
+
+### 7. CSV export of rent payment history
+Pure client-side, no server round-trip — `lib/csv.ts` builds a CSV blob from data already on the page. Available per-tenant (their individual rent history) and as a combined "Export CSV" across every tenant on `/dashboard/tenants`, for real accounting use.
+
+### 8. Listing auto-expiry
+The same `/api/cron/listing-maintenance` job also auto-unlists any listing that's sat `available` for 90+ days without an update, and texts the owner to let them know (with a nudge to edit and relist).
+
+### Schema
+
+Everything above landed in one consolidated migration, `supabase/migrations/0007_renter_features.sql` — run it after `0001`–`0006`. It extends `profiles.role` to allow `'renter'`, adds `area`/`latitude`/`longitude`/`alert_sent` to `properties`, adds `renter_id` to `inquiries`, and creates three new tables (`saved_listings`, `search_alerts`, `reviews`) plus two new columns on `tenants` (`review_token`, `review_requested`).
+
+### New cron job
+
+`vercel.json` now has two daily cron entries — the existing rent-tasks job and the new `/api/cron/listing-maintenance`. **Worth double-checking your Vercel plan's cron limits** — the Hobby tier has historically restricted both the number of cron jobs and how often each can run; confirm two daily jobs fits your plan before relying on this.
+
+### Honest gaps in this round
+
+- **Search alert matching is simple, not fuzzy** — exact city match, and doesn't account for `area`/neighborhood in matching yet (only listing type, bedrooms, price, city). Worth extending if renters want neighborhood-specific alerts.
+- **The Nominatim geocoding email placeholder must be changed before deploying** — flagged above, but repeating here since it's an easy one-line miss that would silently break every future geocode call.
+- **Reviews have no moderation.** Anyone with a review link can submit whatever they want in the comment field — there's no profanity filter or owner ability to dispute/hide a review. Worth adding before this is relied on as a real trust signal.
+- **As always: none of round 16 has been run.** This is the largest single round yet, touching the schema, three new tables, two new cron jobs, and six new pages — I'd treat this as the highest-priority thing to actually test end-to-end, more than any previous round.

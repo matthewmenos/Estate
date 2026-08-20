@@ -8,7 +8,7 @@ import { supabaseBrowser } from "@/lib/supabase";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", role: "owner" as "owner" | "renter" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
@@ -24,14 +24,15 @@ export default function SignupPage() {
 
     // emailRedirectTo tells Supabase where to send the user after they click
     // the confirmation link in their email — /auth/callback picks the flow
-    // back up from there. We also stash their name/phone in user_metadata so
-    // /auth/callback can finish creating the profile without asking again.
+    // back up from there. We also stash their name/phone/role in
+    // user_metadata so /auth/callback can finish creating the profile
+    // without asking again.
     const { data, error: signUpError } = await supabaseBrowser.auth.signUp({
       email: form.email,
       password: form.password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: { full_name: form.name, pending_phone: form.phone },
+        data: { full_name: form.name, pending_phone: form.phone, pending_role: form.role },
       },
     });
 
@@ -47,7 +48,7 @@ export default function SignupPage() {
     // the emailed link first, which lands them on /auth/callback instead.
     if (data.session) {
       await supabaseBrowser.from("profiles").upsert(
-        { id: data.user.id, full_name: form.name, email: form.email },
+        { id: data.user.id, full_name: form.name, email: form.email, role: form.role },
         { onConflict: "id" }
       );
 
@@ -82,10 +83,29 @@ export default function SignupPage() {
 
   return (
     <AuthPageShell>
-      <h1 className="text-2xl font-semibold text-ink mb-1">Create your owner account</h1>
-      <p className="text-slate text-sm mb-6">List and manage your properties on Accra Rentals.</p>
+      <h1 className="text-2xl font-semibold text-ink mb-1">Create your account</h1>
+      <p className="text-slate text-sm mb-6">Join Accra Rentals as an owner or a renter.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-ink mb-1.5">I am a</label>
+          <div className="grid grid-cols-2 gap-2">
+            {(["owner", "renter"] as const).map((role) => (
+              <button
+                key={role}
+                type="button"
+                onClick={() => updateField("role", role)}
+                className={`rounded-xl border px-3 py-2 text-sm font-medium capitalize transition-colors ${
+                  form.role === role
+                    ? "border-rust bg-rust/10 text-rust"
+                    : "border-ink/20 text-slate hover:border-ink/40"
+                }`}
+              >
+                {role === "owner" ? "Property owner" : "Renter / buyer"}
+              </button>
+            ))}
+          </div>
+        </div>
         <div>
           <label className="block text-sm font-medium text-ink mb-1">Full name</label>
           <input

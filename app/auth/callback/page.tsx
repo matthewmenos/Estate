@@ -28,11 +28,12 @@ export default function AuthCallbackPage() {
       const user = session.user;
       const fullName = (user.user_metadata?.full_name as string) ?? "";
       const pendingPhone = (user.user_metadata?.pending_phone as string) ?? "";
+      const pendingRole = (user.user_metadata?.pending_role as string) ?? "owner";
 
       // Finish creating the profile now that we have a confirmed session
       // (this was deferred from signup since there was no session yet then).
       await supabaseBrowser.from("profiles").upsert(
-        { id: user.id, full_name: fullName, email: user.email },
+        { id: user.id, full_name: fullName, email: user.email, role: pendingRole },
         { onConflict: "id" }
       );
 

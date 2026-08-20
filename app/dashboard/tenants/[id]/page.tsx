@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase";
+import { downloadCsv } from "@/lib/csv";
 
 type Tenant = {
   id: string;
@@ -12,6 +13,7 @@ type Tenant = {
   rent_due_day: number;
   lease_start: string | null;
   lease_end: string | null;
+  review_requested: boolean;
   properties: { title: string } | null;
 };
 
@@ -51,7 +53,7 @@ export default function TenantDetailPage() {
 
     const { data: t } = await supabaseBrowser
       .from("tenants")
-      .select("id, name, phone, rent_amount, rent_due_day, lease_start, lease_end, properties(title)")
+      .select("id, name, phone, rent_amount, rent_due_day, lease_start, lease_end, review_requested, properties(title)")
       .eq("id", params.id)
       .single();
     setTenant(t as any);
@@ -123,14 +125,56 @@ export default function TenantDetailPage() {
     load();
   }
 
+  async function requestReview() {
+    if (!tenant) return;
+    setBusyId("review");
+    const { data: sessionData } = await supabaseBrowser.auth.getSession();
+    const token = sessionData.session?.access_token;
+    const res = await fetch("/api/reviews/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ tenantId: tenant.id }),
+    });
+    setBusyId(null);
+    if (res.ok) load();
+  }
+
+  function exportCsv() {
+    if (!tenant) return;
+    downloadCsv(
+      `${tenant.name.replace(/\s+/g, "-")}-rent-history.csv`,
+      ["Due date", "Amount (GHS)", "Status", "Paid date", "Method"],
+      payments.map((p) => [p.due_date, p.amount, p.status, p.paid_date ?? "", p.payment_method])
+    );
+  }
+
   if (loading) return <main className="mx-auto max-w-2xl px-4 py-8 text-sm text-slate">Loading…</main>;
   if (!tenant) return <main className="mx-auto max-w-2xl px-4 py-8 text-sm text-rust">Tenant not found.</main>;
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-semibold text-ink">{tenant.name}</h1>
-      <p className="text-sm text-slate mb-1">{tenant.properties?.title}</p>
-      <p className="text-sm text-slate font-mono mb-6">{tenant.phone}</p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold text-ink">{tenant.name}</h1>
+          <p className="text-sm text-slate mb-1">{tenant.properties?.title}</p>
+          <p className="text-sm text-slate font-mono mb-6">{tenant.phone}</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={exportCsv}
+            className="text-xs rounded-full border border-ink/30 text-ink px-3 py-2 font-medium h-fit"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={requestReview}
+            disabled={busyId === "review" || tenant.review_requested}
+            className="text-xs rounded-full border border-ink/30 text-ink px-3 py-2 font-medium h-fit disabled:opacity-50"
+          >
+            {tenant.review_requested ? "Review requested ✓" : busyId === "review" ? "Sending…" : "Request review"}
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-3 gap-4 mb-8 text-sm">
         <div className="bg-paper-raised border border-ink/10 rounded-xl p-3">

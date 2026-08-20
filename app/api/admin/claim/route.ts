@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase";
 import { checkAdminPassword } from "@/lib/adminConfig";
-
-// Very small in-memory throttle: this resets on every server restart/deploy
-// and isn't shared across serverless instances, so it's a speed bump against
-// casual guessing, not a real rate limiter. Fine for an MVP with low traffic;
-// swap for a durable store (Upstash/Redis, or a DB-backed counter) before
-// this app has enough users that it matters.
-const attempts = new Map<string, number>();
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,8 +22,8 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = userData.user.id;
-    const recentAttempts = attempts.get(userId) ?? 0;
-    if (recentAttempts >= 5) {
+    const allowed = await checkRateLimit(`admin-claim:${userId}`, 5, 15 * 60); // 5 attempts / 15 min
+    if (!allowed) {
       return NextResponse.json(
         { error: "Too many attempts. Try again later." },
         { status: 429 }
@@ -42,11 +36,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (!checkAdminPassword(password)) {
-      attempts.set(userId, recentAttempts + 1);
       return NextResponse.json({ error: "Incorrect password" }, { status: 403 });
     }
-
-    attempts.delete(userId);
 
     const supabase = supabaseServer();
     const { error } = await supabase.from("profiles").update({ is_admin: true }).eq("id", userId);

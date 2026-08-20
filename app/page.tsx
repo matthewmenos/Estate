@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase";
 import ListingsFilter from "@/components/ListingsFilter";
 import TiltHouses from "@/components/TiltHouses";
+import { slugifyArea } from "@/lib/areaSlug";
 
 export const revalidate = 60;
 
@@ -22,8 +23,20 @@ async function getListings() {
   return data;
 }
 
+async function getAreas() {
+  const supabase = supabaseServer();
+  const { data } = await supabase
+    .from("properties")
+    .select("area")
+    .eq("status", "available")
+    .not("area", "is", null);
+  const unique = Array.from(new Set((data ?? []).map((d) => d.area).filter(Boolean)));
+  return unique.slice(0, 8) as string[];
+}
+
 export default async function HomePage() {
   const listings = await getListings();
+  const areas = await getAreas();
 
   return (
     <main>
@@ -94,6 +107,23 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
+
+      {areas.length > 0 && (
+        <section className="mx-auto max-w-5xl px-4 py-10 border-b border-ink/10">
+          <h2 className="text-sm font-medium text-slate mb-3">Browse by neighborhood</h2>
+          <div className="flex flex-wrap gap-2">
+            {areas.map((area) => (
+              <Link
+                key={area}
+                href={`/areas/${slugifyArea(area)}`}
+                className="rounded-full border border-ink/20 px-3 py-1.5 text-sm text-ink hover:border-rust hover:text-rust transition-colors"
+              >
+                {area}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Listings */}
       <section id="listings" className="mx-auto max-w-5xl px-4 py-16">

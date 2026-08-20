@@ -9,6 +9,7 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
     supabaseBrowser.auth.getUser().then(async ({ data }) => {
@@ -16,10 +17,11 @@ export default function SiteHeader() {
       if (data.user) {
         const { data: profile } = await supabaseBrowser
           .from("profiles")
-          .select("is_admin")
+          .select("is_admin, role")
           .eq("id", data.user.id)
           .single();
         setIsAdmin(!!profile?.is_admin);
+        setRole(profile?.role ?? null);
       }
     });
   }, []);
@@ -60,10 +62,10 @@ export default function SiteHeader() {
                 </Link>
               )}
               <Link
-                href="/dashboard"
+                href={role === "renter" ? "/renter" : "/dashboard"}
                 className="rounded-full bg-ink text-paper-raised px-4 py-2 hover:bg-ink-soft transition-colors"
               >
-                Dashboard
+                {role === "renter" ? "My account" : "Dashboard"}
               </Link>
             </>
           ) : (
@@ -71,7 +73,7 @@ export default function SiteHeader() {
               href="/login"
               className="rounded-full border border-ink px-4 py-2 hover:bg-ink hover:text-paper-raised transition-colors"
             >
-              Owner login
+              Log in
             </Link>
           )}
         </nav>

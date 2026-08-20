@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase";
+import { downloadCsv } from "@/lib/csv";
 
 type TenantRow = {
   id: string;
@@ -12,7 +13,7 @@ type TenantRow = {
   rent_amount: number;
   rent_due_day: number;
   properties: { title: string } | null;
-  rent_payments: { status: string; due_date: string }[];
+  rent_payments: { status: string; due_date: string; amount: number; paid_date: string | null; payment_method: string }[];
 };
 
 export default function TenantsPage() {
@@ -31,7 +32,7 @@ export default function TenantsPage() {
       const { data, error } = await supabaseBrowser
         .from("tenants")
         .select(
-          "id, name, phone, rent_amount, rent_due_day, properties(title), rent_payments(status, due_date)"
+          "id, name, phone, rent_amount, rent_due_day, properties(title), rent_payments(status, due_date, amount, paid_date, payment_method)"
         )
         .order("created_at", { ascending: false });
 
@@ -56,16 +57,38 @@ export default function TenantsPage() {
     "no payments logged": "text-slate bg-ink/5",
   };
 
+  function exportAll() {
+    const rows: (string | number)[][] = [];
+    tenants.forEach((t) => {
+      t.rent_payments.forEach((p) => {
+        rows.push([t.name, t.properties?.title ?? "", p.due_date, p.amount, p.status, p.paid_date ?? "", p.payment_method]);
+      });
+    });
+    downloadCsv(
+      "all-tenants-rent-history.csv",
+      ["Tenant", "Property", "Due date", "Amount (GHS)", "Status", "Paid date", "Method"],
+      rows
+    );
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-ink">Tenants & rent</h1>
-        <Link
-          href="/dashboard/tenants/new"
-          className="rounded-xl bg-rust text-paper-raised px-4 py-2 text-sm font-medium"
-        >
-          + Add tenant
-        </Link>
+        <div className="flex gap-2">
+          <button
+            onClick={exportAll}
+            className="rounded-full border border-ink/30 text-ink px-4 py-2 text-sm font-medium"
+          >
+            Export CSV
+          </button>
+          <Link
+            href="/dashboard/tenants/new"
+            className="rounded-xl bg-rust text-paper-raised px-4 py-2 text-sm font-medium"
+          >
+            + Add tenant
+          </Link>
+        </div>
       </div>
 
       {loading ? (

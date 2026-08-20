@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabaseBrowser } from "@/lib/supabase";
 
 export default function InquiryForm({ propertyId }: { propertyId: string }) {
   const [name, setName] = useState("");
@@ -8,13 +9,35 @@ export default function InquiryForm({ propertyId }: { propertyId: string }) {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
+  useEffect(() => {
+    // If a renter is logged in, prefill their details so they don't retype them.
+    async function prefill() {
+      const { data: userData } = await supabaseBrowser.auth.getUser();
+      if (!userData.user) return;
+      const { data: profile } = await supabaseBrowser
+        .from("profiles")
+        .select("full_name, phone")
+        .eq("id", userData.user.id)
+        .single();
+      if (profile?.full_name) setName(profile.full_name);
+      if (profile?.phone) setPhone(profile.phone);
+    }
+    prefill();
+  }, []);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
 
+    const { data: sessionData } = await supabaseBrowser.auth.getSession();
+    const token = sessionData.session?.access_token;
+
     const res = await fetch("/api/inquiries", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({
         propertyId,
         renterName: name,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 import { supabaseServer } from "@/lib/supabase";
 import { sendNotificationSms } from "@/lib/arkeselSms";
 
@@ -14,11 +15,27 @@ export async function POST(req: NextRequest) {
 
   const supabase = supabaseServer();
 
+  // Inquiries can be submitted anonymously (no login required) — but if the
+  // request carries an auth token (a logged-in renter), link the inquiry to
+  // their account so it shows up in their "My inquiries" history.
+  let renterId: string | null = null;
+  const authHeader = req.headers.get("authorization");
+  if (authHeader) {
+    const authedClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: userData } = await authedClient.auth.getUser();
+    renterId = userData.user?.id ?? null;
+  }
+
   const { error } = await supabase.from("inquiries").insert({
     property_id: propertyId,
     renter_name: renterName,
     renter_phone: renterPhone,
     message: message ?? null,
+    renter_id: renterId,
   });
 
   if (error) {

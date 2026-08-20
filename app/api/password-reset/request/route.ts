@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
 import { sendPhoneOtp, normalizeGhanaPhone } from "@/lib/arkesel";
+import { checkRateLimit } from "@/lib/rateLimit";
+
+const GENERIC_RESPONSE = {
+  success: true,
+  message: "If that number is registered, a code has been sent.",
+};
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,6 +16,17 @@ export async function POST(req: NextRequest) {
     }
 
     const normalized = normalizeGhanaPhone(phone);
+
+    // Rate limit before doing anything else — without this, someone could
+    // spam Arkesel sends (and cost) against any phone number. Deliberately
+    // still returns the same generic response when rate-limited, matching
+    // the existing "never reveal anything via this endpoint" design below —
+    // it just silently skips the actual send.
+    const allowed = await checkRateLimit(`password-reset-request:${normalized}`, 3, 15 * 60);
+    if (!allowed) {
+      return NextResponse.json(GENERIC_RESPONSE);
+    }
+
     const supabase = supabaseServer();
 
     const { data: profile } = await supabase
@@ -26,16 +43,10 @@ export async function POST(req: NextRequest) {
       await sendPhoneOtp(normalized);
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "If that number is registered, a code has been sent.",
-    });
+    return NextResponse.json(GENERIC_RESPONSE);
   } catch (err: any) {
     console.error("Password reset request failed:", err);
     // Still return a generic success shape to avoid leaking anything via errors.
-    return NextResponse.json({
-      success: true,
-      message: "If that number is registered, a code has been sent.",
-    });
+    return NextResponse.json(GENERIC_RESPONSE);
   }
 }

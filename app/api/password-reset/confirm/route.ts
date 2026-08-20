@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
 import { verifyPhoneOtp, normalizeGhanaPhone } from "@/lib/arkesel";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,6 +17,18 @@ export async function POST(req: NextRequest) {
     }
 
     const normalized = normalizeGhanaPhone(phone);
+
+    // Rate limit by the *target* phone number, not the caller — this is an
+    // unauthenticated endpoint (that's the whole point: you forgot your
+    // password), so there's no user ID to key on. Limiting by phone stops
+    // someone from hammering codes against one specific account.
+    const allowed = await checkRateLimit(`password-reset-confirm:${normalized}`, 5, 15 * 60);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many attempts. Try again later." },
+        { status: 429 }
+      );
+    }
 
     // The Arkesel code is the only proof of identity we have here — this is
     // what stands in for "you control this phone number, so you're allowed

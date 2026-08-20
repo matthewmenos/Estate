@@ -13,6 +13,7 @@ export default function EditListingPage() {
     title: "",
     description: "",
     address: "",
+    area: "",
     city: "",
     property_type: "house",
     listing_type: "rent",
@@ -24,6 +25,7 @@ export default function EditListingPage() {
     status: "available",
   });
   const [loading, setLoading] = useState(true);
+  const [initialStatus, setInitialStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +54,7 @@ export default function EditListingPage() {
         title: data.title ?? "",
         description: data.description ?? "",
         address: data.address ?? "",
+        area: data.area ?? "",
         city: data.city ?? "",
         property_type: data.property_type ?? "house",
         listing_type: data.listing_type ?? "rent",
@@ -62,6 +65,7 @@ export default function EditListingPage() {
         size_sqm: data.size_sqm != null ? String(data.size_sqm) : "",
         status: data.status ?? "available",
       });
+      setInitialStatus(data.status ?? "available");
       setLoading(false);
     }
     load();
@@ -78,24 +82,51 @@ export default function EditListingPage() {
 
     // RLS ("Owners manage their own properties") ensures this only succeeds
     // if the logged-in user actually owns this row.
+    const updatePayload: Record<string, any> = {
+      title: form.title,
+      description: form.description || null,
+      address: form.address,
+      area: form.area || null,
+      city: form.city,
+      property_type: form.property_type,
+      listing_type: form.listing_type,
+      price: Number(form.price),
+      currency: form.currency,
+      bedrooms: form.bedrooms ? Number(form.bedrooms) : null,
+      bathrooms: form.bathrooms ? Number(form.bathrooms) : null,
+      size_sqm: form.size_sqm ? Number(form.size_sqm) : null,
+      status: form.status,
+      updated_at: new Date().toISOString(),
+    };
+    // If this save relists a previously-unavailable property, clear
+    // alert_sent so the search-alerts cron treats it as newly available
+    // again — without this, someone who relists after a few months would
+    // never re-trigger matching renters' saved alerts.
+    if (form.status === "available" && initialStatus !== "available") {
+      updatePayload.alert_sent = false;
+    }
+
     const { error } = await supabaseBrowser
       .from("properties")
-      .update({
-        title: form.title,
-        description: form.description || null,
-        address: form.address,
-        city: form.city,
-        property_type: form.property_type,
-        listing_type: form.listing_type,
-        price: Number(form.price),
-        currency: form.currency,
-        bedrooms: form.bedrooms ? Number(form.bedrooms) : null,
-        bathrooms: form.bathrooms ? Number(form.bathrooms) : null,
-        size_sqm: form.size_sqm ? Number(form.size_sqm) : null,
-        status: form.status,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq("id", params.id);
+
+    // Re-geocode in the background — best-effort, never blocks the save.
+    fetch("/api/geocode", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address: form.address, city: form.city }),
+    })
+      .then((r) => r.json())
+      .then(({ coords }) => {
+        if (coords) {
+          supabaseBrowser
+            .from("properties")
+            .update({ latitude: coords.lat, longitude: coords.lng })
+            .eq("id", params.id);
+        }
+      })
+      .catch(() => {});
 
     setSaving(false);
     if (error) {

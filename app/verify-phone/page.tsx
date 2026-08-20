@@ -38,7 +38,12 @@ function VerifyPhoneForm() {
       setError(data.error ?? "Verification failed.");
       return;
     }
-    router.push("/dashboard");
+    const { data: profile } = await supabaseBrowser
+      .from("profiles")
+      .select("role")
+      .eq("id", (await supabaseBrowser.auth.getUser()).data.user?.id)
+      .single();
+    router.push(profile?.role === "renter" ? "/renter" : "/dashboard");
   }
 
   async function handleResend() {

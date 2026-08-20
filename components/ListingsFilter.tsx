@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import PropertyCard from "./PropertyCard";
+import { supabaseBrowser } from "@/lib/supabase";
 
 type Listing = {
   id: string;
@@ -18,9 +20,11 @@ type Listing = {
 };
 
 export default function ListingsFilter({ listings }: { listings: Listing[] }) {
+  const router = useRouter();
   const [listingType, setListingType] = useState<"all" | "rent" | "sale">("all");
   const [minBeds, setMinBeds] = useState<string>("any");
   const [maxPrice, setMaxPrice] = useState<string>("");
+  const [alertStatus, setAlertStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   const filtered = useMemo(() => {
     return listings.filter((l) => {
@@ -30,6 +34,23 @@ export default function ListingsFilter({ listings }: { listings: Listing[] }) {
       return true;
     });
   }, [listings, listingType, minBeds, maxPrice]);
+
+  async function saveAlert() {
+    setAlertStatus("saving");
+    const { data: userData } = await supabaseBrowser.auth.getUser();
+    if (!userData.user) {
+      router.push("/login");
+      return;
+    }
+    await supabaseBrowser.from("search_alerts").insert({
+      renter_id: userData.user.id,
+      listing_type: listingType === "all" ? null : listingType,
+      min_bedrooms: minBeds === "any" ? null : Number(minBeds),
+      max_price: maxPrice ? Number(maxPrice) : null,
+      city: "Accra",
+    });
+    setAlertStatus("saved");
+  }
 
   return (
     <div>
@@ -72,10 +93,17 @@ export default function ListingsFilter({ listings }: { listings: Listing[] }) {
           />
         </div>
         {filtered.length !== listings.length && (
-          <p className="text-xs text-slate self-center ml-auto">
+          <p className="text-xs text-slate self-center">
             {filtered.length} of {listings.length} listings
           </p>
         )}
+        <button
+          onClick={saveAlert}
+          disabled={alertStatus !== "idle"}
+          className="ml-auto rounded-full border border-ink/20 text-ink px-3 py-2 text-xs font-medium hover:border-ink/40 disabled:opacity-60"
+        >
+          {alertStatus === "saved" ? "Alert saved ✓" : alertStatus === "saving" ? "Saving…" : "🔔 Alert me for these filters"}
+        </button>
       </div>
 
       {filtered.length === 0 ? (
